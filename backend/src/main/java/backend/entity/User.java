@@ -20,7 +20,7 @@ public class User {
     @Column(nullable = false)
     private String fullName;
 
-    @Column(nullable = false)
+    @Column(name = "academic_year", nullable = false)
     private String year;
 
     @Column(nullable = false)
