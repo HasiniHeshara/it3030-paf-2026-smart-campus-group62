@@ -69,7 +69,7 @@ const LoginPage = () => {
         </form>
 
         <p className="auth-switch">
-          Don&apos;t have an account? <Link to="/register">Register</Link>
+          Don't have an account? <Link to="/register">Register</Link>
         </p>
       </div>
     </div>

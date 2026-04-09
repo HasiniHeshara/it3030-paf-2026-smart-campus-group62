@@ -11,9 +11,10 @@ import AdminDashboard from "./Pages/Admin/AdminDash";
 import ManageUsers from "./Pages/Admin/ManageUsers";
 import { AuthProvider } from "./context/AuthContext";
 import HomePage from "./Pages/Home/Home.jsx";
-import Navbar from "./Components/NavBar";
 import BookingPage from "./Pages/Home/Bookings/BookingPage.jsx";
 import "./App.css";
+import AddResource from "./Pages/Admin/AddResource";
+import FacilitiesPage from "./Pages/Facilities/FacilitiesPage";
 
 function App() {
   return (
@@ -23,6 +24,7 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
+        <Route path="/admin/add-resource" element={<AddResource />} />
 
         <Route
           path="/dashboard"
@@ -50,8 +52,11 @@ function App() {
             </AdminRoute>
           }
         />
-        <Route path="/" element={<HomePage />} />
         <Route path="/bookings" element={<BookingPage />} />
+
+         <Route path="/facilities" element={<FacilitiesPage />} />
+
+      
       </Routes>
     </AuthProvider>
   );
