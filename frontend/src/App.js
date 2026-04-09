@@ -10,6 +10,10 @@ import UserDashboard from "./Pages/Dashboard/UserDashboard";
 import AdminDashboard from "./Pages/Admin/AdminDash";
 import ManageUsers from "./Pages/Admin/ManageUsers";
 import { AuthProvider } from "./context/AuthContext";
+import HomePage from "./Pages/Home/Home.jsx";
+import Navbar from "./Components/NavBar";
+import BookingPage from "./Pages/Home/Bookings/BookingPage.jsx";
+import "./App.css";
 
 function App() {
   return (
@@ -46,6 +50,8 @@ function App() {
             </AdminRoute>
           }
         />
+        <Route path="/" element={<HomePage />} />
+        <Route path="/bookings" element={<BookingPage />} />
       </Routes>
     </AuthProvider>
   );
