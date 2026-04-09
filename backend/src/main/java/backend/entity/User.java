@@ -20,6 +20,15 @@ public class User {
     @Column(nullable = false)
     private String fullName;
 
+    @Column(nullable = false)
+    private String year;
+
+    @Column(nullable = false)
+    private String faculty;
+
+    @Column(nullable = false, unique = true)
+    private String itNumber;
+
     @Column(nullable = false, unique = true)
     private String email;
 
@@ -51,6 +60,30 @@ public class User {
 
     public void setFullName(String fullName) {
         this.fullName = fullName;
+    }
+
+    public String getYear() {
+        return year;
+    }
+
+    public void setYear(String year) {
+        this.year = year;
+    }
+
+    public String getFaculty() {
+        return faculty;
+    }
+
+    public void setFaculty(String faculty) {
+        this.faculty = faculty;
+    }
+
+    public String getItNumber() {
+        return itNumber;
+    }
+
+    public void setItNumber(String itNumber) {
+        this.itNumber = itNumber;
     }
 
     public String getEmail() {

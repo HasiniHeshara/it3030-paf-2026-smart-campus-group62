@@ -29,6 +29,9 @@ public class AuthService {
 
         User user = new User();
         user.setFullName(request.getFullName());
+        user.setYear(request.getYear());
+        user.setFaculty(request.getFaculty());
+        user.setItNumber(request.getItNumber());
         user.setEmail(request.getEmail());
         user.setPassword(passwordEncoder.encode(request.getPassword()));
         user.setRole(User.Role.USER);
@@ -40,6 +43,9 @@ public class AuthService {
         return new AuthResponse(
                 savedUser.getId(),
                 savedUser.getFullName(),
+                savedUser.getYear(),
+                savedUser.getFaculty(),
+                savedUser.getItNumber(),
                 savedUser.getEmail(),
                 savedUser.getRole().name(),
                 token,
@@ -48,6 +54,24 @@ public class AuthService {
     }
 
     public AuthResponse login(LoginRequest request) {
+
+        // Hardcoded admin login
+        if ("admin@sliit.lk".equals(request.getEmail()) && "Admin@123".equals(request.getPassword())) {
+            String token = jwtService.generateToken("admin@sliit.lk", "ADMIN");
+
+            return new AuthResponse(
+                    0L,
+                    "System Admin",
+                    "Admin",
+                    "Administration",
+                    "ADMIN000",
+                    "admin@sliit.lk",
+                    "ADMIN",
+                    token,
+                    "Admin login successful"
+            );
+        }
+
         User user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new RuntimeException("Invalid email or password"));
 
@@ -60,6 +84,9 @@ public class AuthService {
         return new AuthResponse(
                 user.getId(),
                 user.getFullName(),
+                user.getYear(),
+                user.getFaculty(),
+                user.getItNumber(),
                 user.getEmail(),
                 user.getRole().name(),
                 token,
@@ -68,12 +95,31 @@ public class AuthService {
     }
 
     public AuthResponse getCurrentUser(String email) {
+
+        // Hardcoded admin current user
+        if ("admin@sliit.lk".equals(email)) {
+            return new AuthResponse(
+                    0L,
+                    "System Admin",
+                    "Admin",
+                    "Administration",
+                    "ADMIN000",
+                    "admin@sliit.lk",
+                    "ADMIN",
+                    null,
+                    "Admin fetched successfully"
+            );
+        }
+
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
         return new AuthResponse(
                 user.getId(),
                 user.getFullName(),
+                user.getYear(),
+                user.getFaculty(),
+                user.getItNumber(),
                 user.getEmail(),
                 user.getRole().name(),
                 null,
