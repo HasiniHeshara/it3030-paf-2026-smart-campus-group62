@@ -20,7 +20,8 @@ const AdminDashboard = () => {
             <p className="admin-tag">Administration Panel</p>
             <h1>Welcome, {user?.fullName}</h1>
             <p className="admin-subtitle">
-              Manage bookings, users, maintenance, notifications, and key system activities from one place.
+              Manage bookings, users, maintenance, notifications, and key system
+              activities from one place.
             </p>
           </div>
 
@@ -35,7 +36,10 @@ const AdminDashboard = () => {
             <p>View, search, and manage all registered users in the system.</p>
           </div>
 
-          <div className="admin-card" onClick={() => navigate("/bookings")}>
+          <div
+            className="admin-card"
+            onClick={() => navigate("/admin/manage-bookings")}
+          >
             <h3>Manage Bookings</h3>
             <p>View and manage all booking requests.</p>
           </div>
