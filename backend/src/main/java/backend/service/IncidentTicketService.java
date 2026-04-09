@@ -2,11 +2,13 @@ package backend.service;
 
 import backend.dto.CreateIncidentTicketRequest;
 import backend.dto.IncidentTicketAttachmentResponse;
+import backend.dto.IncidentTicketCommentRequest;
 import backend.dto.IncidentTicketCommentResponse;
 import backend.dto.IncidentTicketAssignmentRequest;
 import backend.dto.IncidentTicketResponse;
 import backend.dto.IncidentTicketStatusUpdateRequest;
 import backend.entity.IncidentTicketAttachment;
+import backend.entity.IncidentTicketComment;
 import backend.entity.IncidentTicket;
 import backend.entity.Resource;
 import backend.entity.User;
@@ -14,6 +16,7 @@ import backend.enumtype.IncidentTicketStatus;
 import backend.exception.BadRequestException;
 import backend.exception.ResourceNotFoundException;
 import backend.repository.IncidentTicketAttachmentRepository;
+import backend.repository.IncidentTicketCommentRepository;
 import backend.repository.IncidentTicketRepository;
 import backend.repository.ResourceRepository;
 import backend.repository.UserRepository;
@@ -24,7 +27,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 @Service
@@ -32,15 +34,18 @@ public class IncidentTicketService {
 
     private final IncidentTicketRepository incidentTicketRepository;
     private final IncidentTicketAttachmentRepository incidentTicketAttachmentRepository;
+    private final IncidentTicketCommentRepository incidentTicketCommentRepository;
     private final ResourceRepository resourceRepository;
     private final UserRepository userRepository;
 
     public IncidentTicketService(IncidentTicketRepository incidentTicketRepository,
                                  IncidentTicketAttachmentRepository incidentTicketAttachmentRepository,
+                                 IncidentTicketCommentRepository incidentTicketCommentRepository,
                                  ResourceRepository resourceRepository,
                                  UserRepository userRepository) {
         this.incidentTicketRepository = incidentTicketRepository;
         this.incidentTicketAttachmentRepository = incidentTicketAttachmentRepository;
+        this.incidentTicketCommentRepository = incidentTicketCommentRepository;
         this.resourceRepository = resourceRepository;
         this.userRepository = userRepository;
     }
@@ -180,11 +185,92 @@ public class IncidentTicketService {
         return mapToResponse(incidentTicket);
     }
 
+    @Transactional
+    public IncidentTicketResponse addComment(Long incidentTicketId,
+                                             IncidentTicketCommentRequest request,
+                                             String userEmail) {
+        if (!incidentTicketId.equals(request.getIncidentTicketId())) {
+            throw new BadRequestException("Ticket id in path and request body must match");
+        }
+
+        IncidentTicket incidentTicket = incidentTicketRepository.findById(incidentTicketId)
+                .orElseThrow(() -> new ResourceNotFoundException("Incident ticket not found with id: " + incidentTicketId));
+
+        User author = userRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + userEmail));
+
+        IncidentTicketComment comment = new IncidentTicketComment();
+        comment.setIncidentTicket(incidentTicket);
+        comment.setAuthor(author);
+        comment.setContent(request.getContent());
+
+        incidentTicketCommentRepository.save(comment);
+        return mapToResponse(incidentTicket);
+    }
+
+    @Transactional
+    public IncidentTicketResponse updateComment(Long incidentTicketId,
+                                                Long commentId,
+                                                IncidentTicketCommentRequest request,
+                                                String userEmail,
+                                                boolean isAdmin) {
+        if (!incidentTicketId.equals(request.getIncidentTicketId())) {
+            throw new BadRequestException("Ticket id in path and request body must match");
+        }
+
+        IncidentTicket incidentTicket = incidentTicketRepository.findById(incidentTicketId)
+                .orElseThrow(() -> new ResourceNotFoundException("Incident ticket not found with id: " + incidentTicketId));
+
+        IncidentTicketComment comment = incidentTicketCommentRepository.findById(commentId)
+                .orElseThrow(() -> new ResourceNotFoundException("Comment not found with id: " + commentId));
+
+        if (!comment.getIncidentTicket().getId().equals(incidentTicketId)) {
+            throw new BadRequestException("Comment does not belong to the selected ticket");
+        }
+
+        if (!isAdmin && !comment.getAuthor().getEmail().equalsIgnoreCase(userEmail)) {
+            throw new AccessDeniedException("You can only edit your own comments");
+        }
+
+        comment.setContent(request.getContent());
+        incidentTicketCommentRepository.save(comment);
+
+        return mapToResponse(incidentTicket);
+    }
+
+    @Transactional
+    public void deleteComment(Long incidentTicketId,
+                              Long commentId,
+                              String userEmail,
+                              boolean isAdmin) {
+        incidentTicketRepository.findById(incidentTicketId)
+                .orElseThrow(() -> new ResourceNotFoundException("Incident ticket not found with id: " + incidentTicketId));
+
+        IncidentTicketComment comment = incidentTicketCommentRepository.findById(commentId)
+                .orElseThrow(() -> new ResourceNotFoundException("Comment not found with id: " + commentId));
+
+        if (!comment.getIncidentTicket().getId().equals(incidentTicketId)) {
+            throw new BadRequestException("Comment does not belong to the selected ticket");
+        }
+
+        if (!isAdmin && !comment.getAuthor().getEmail().equalsIgnoreCase(userEmail)) {
+            throw new AccessDeniedException("You can only delete your own comments");
+        }
+
+        incidentTicketCommentRepository.delete(comment);
+    }
+
     private IncidentTicketResponse mapToResponse(IncidentTicket incidentTicket) {
         List<IncidentTicketAttachmentResponse> attachmentResponses = incidentTicketAttachmentRepository
                 .findByIncidentTicketIdOrderByUploadedAtAsc(incidentTicket.getId())
                 .stream()
                 .map(this::mapToAttachmentResponse)
+                .toList();
+
+        List<IncidentTicketCommentResponse> commentResponses = incidentTicketCommentRepository
+                .findByIncidentTicketIdOrderByCreatedAtAsc(incidentTicket.getId())
+                .stream()
+                .map(this::mapToCommentResponse)
                 .toList();
 
         Long assignedToId = incidentTicket.getAssignedTo() != null ? incidentTicket.getAssignedTo().getId() : null;
@@ -212,7 +298,7 @@ public class IncidentTicketService {
                 assignedToName,
                 assignedToEmail,
                 attachmentResponses,
-                Collections.<IncidentTicketCommentResponse>emptyList(),
+                commentResponses,
                 incidentTicket.getCreatedAt(),
                 incidentTicket.getUpdatedAt()
         );
@@ -226,6 +312,19 @@ public class IncidentTicketService {
                 attachment.getContentType(),
                 attachment.getFileSize(),
                 attachment.getUploadedAt()
+        );
+    }
+
+    private IncidentTicketCommentResponse mapToCommentResponse(IncidentTicketComment comment) {
+        return new IncidentTicketCommentResponse(
+                comment.getId(),
+                comment.getIncidentTicket().getId(),
+                comment.getAuthor().getId(),
+                comment.getAuthor().getFullName(),
+                comment.getAuthor().getRole().name(),
+                comment.getContent(),
+                comment.getCreatedAt(),
+                comment.getUpdatedAt()
         );
     }
 

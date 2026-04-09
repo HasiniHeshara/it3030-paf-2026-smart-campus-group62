@@ -2,6 +2,7 @@ package backend.controller;
 
 import backend.dto.CreateIncidentTicketRequest;
 import backend.dto.IncidentTicketAssignmentRequest;
+import backend.dto.IncidentTicketCommentRequest;
 import backend.dto.IncidentTicketStatusUpdateRequest;
 import backend.dto.IncidentTicketResponse;
 import backend.service.IncidentTicketService;
@@ -10,6 +11,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -17,8 +19,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.bind.annotation.RequestPart;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/api/incident-tickets")
@@ -42,33 +44,70 @@ public class IncidentTicketController {
         );
     }
 
-        @PatchMapping("/{id}/status")
-        public ResponseEntity<IncidentTicketResponse> updateIncidentTicketStatus(
+    @PatchMapping("/{id}/status")
+    public ResponseEntity<IncidentTicketResponse> updateIncidentTicketStatus(
             @PathVariable Long id,
             Authentication authentication,
             @Valid @RequestBody IncidentTicketStatusUpdateRequest request
-        ) {
-            boolean isAdmin = authentication.getAuthorities().stream()
+    ) {
+        boolean isAdmin = authentication.getAuthorities().stream()
             .anyMatch(authority -> "ROLE_ADMIN".equals(authority.getAuthority()));
 
-            if (isAdmin) {
-                return ResponseEntity.ok(incidentTicketService.updateIncidentTicketStatus(id, request, true));
-            }
+        if (isAdmin) {
+            return ResponseEntity.ok(incidentTicketService.updateIncidentTicketStatus(id, request, true));
+        }
 
-            return ResponseEntity.ok(incidentTicketService.updateAssignedTicketStatus(id, request, authentication.getName()));
-            }
+        return ResponseEntity.ok(incidentTicketService.updateAssignedTicketStatus(id, request, authentication.getName()));
+    }
 
-            @PutMapping("/{id}/assign")
-            public ResponseEntity<IncidentTicketResponse> assignIncidentTicket(
+    @PutMapping("/{id}/assign")
+    public ResponseEntity<IncidentTicketResponse> assignIncidentTicket(
                 @PathVariable Long id,
                 Authentication authentication,
                 @Valid @RequestBody IncidentTicketAssignmentRequest request
-            ) {
-            boolean isAdmin = authentication.getAuthorities().stream()
+    ) {
+        boolean isAdmin = authentication.getAuthorities().stream()
                 .anyMatch(authority -> "ROLE_ADMIN".equals(authority.getAuthority()));
 
-            return ResponseEntity.ok(incidentTicketService.assignIncidentTicket(id, request, isAdmin));
-        }
+        return ResponseEntity.ok(incidentTicketService.assignIncidentTicket(id, request, isAdmin));
+    }
+
+    @PostMapping("/{id}/comments")
+    public ResponseEntity<IncidentTicketResponse> addComment(
+            @PathVariable Long id,
+            Authentication authentication,
+            @Valid @RequestBody IncidentTicketCommentRequest request
+    ) {
+        return ResponseEntity.ok(incidentTicketService.addComment(id, request, authentication.getName()));
+    }
+
+    @PutMapping("/{ticketId}/comments/{commentId}")
+    public ResponseEntity<IncidentTicketResponse> updateComment(
+            @PathVariable Long ticketId,
+            @PathVariable Long commentId,
+            Authentication authentication,
+            @Valid @RequestBody IncidentTicketCommentRequest request
+    ) {
+        boolean isAdmin = authentication.getAuthorities().stream()
+                .anyMatch(authority -> "ROLE_ADMIN".equals(authority.getAuthority()));
+
+        return ResponseEntity.ok(
+                incidentTicketService.updateComment(ticketId, commentId, request, authentication.getName(), isAdmin)
+        );
+    }
+
+    @DeleteMapping("/{ticketId}/comments/{commentId}")
+    public ResponseEntity<String> deleteComment(
+            @PathVariable Long ticketId,
+            @PathVariable Long commentId,
+            Authentication authentication
+    ) {
+        boolean isAdmin = authentication.getAuthorities().stream()
+                .anyMatch(authority -> "ROLE_ADMIN".equals(authority.getAuthority()));
+
+        incidentTicketService.deleteComment(ticketId, commentId, authentication.getName(), isAdmin);
+        return ResponseEntity.ok("Comment deleted successfully");
+    }
 
     @PostMapping(value = "/{id}/attachments", consumes = "multipart/form-data")
     public ResponseEntity<IncidentTicketResponse> addAttachments(
