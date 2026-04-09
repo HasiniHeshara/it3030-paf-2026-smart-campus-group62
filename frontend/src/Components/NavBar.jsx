@@ -1,9 +1,18 @@
 import React from "react";
-import { NavLink, Link } from "react-router-dom";
+import { NavLink, Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 import logo from "../assets/logo.png";
 import "./NavBar.css";
 
 const Navbar = () => {
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    logout();
+    navigate("/login");
+  };
+
   return (
     <header className="navbar">
       <div className="navbar-container">
@@ -34,9 +43,20 @@ const Navbar = () => {
         </nav>
 
         <div className="nav-actions">
-          <Link to="/login" className="nav-login-btn">
-            Login
-          </Link>
+          {user ? (
+            <>
+              <Link to="/dashboard" className="nav-login-btn">
+                Dashboard
+              </Link>
+              <button className="nav-login-btn" onClick={handleLogout}>
+                Logout
+              </button>
+            </>
+          ) : (
+            <Link to="/login" className="nav-login-btn">
+              Login
+            </Link>
+          )}
         </div>
       </div>
     </header>

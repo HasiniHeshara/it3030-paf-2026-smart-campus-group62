@@ -1,6 +1,6 @@
 package backend.dto;
 
-public class AuthResponse {
+public class UserManagementResponse {
 
     private Long id;
     private String fullName;
@@ -9,14 +9,12 @@ public class AuthResponse {
     private String itNumber;
     private String email;
     private String role;
-    private String token;
-    private String message;
 
-    public AuthResponse() {
+    public UserManagementResponse() {
     }
 
-    public AuthResponse(Long id, String fullName, String year, String faculty, String itNumber,
-                        String email, String role, String token, String message) {
+    public UserManagementResponse(Long id, String fullName, String year, String faculty,
+                                  String itNumber, String email, String role) {
         this.id = id;
         this.fullName = fullName;
         this.year = year;
@@ -24,8 +22,6 @@ public class AuthResponse {
         this.itNumber = itNumber;
         this.email = email;
         this.role = role;
-        this.token = token;
-        this.message = message;
     }
 
     public Long getId() {
@@ -54,13 +50,5 @@ public class AuthResponse {
 
     public String getRole() {
         return role;
-    }
-
-    public String getToken() {
-        return token;
-    }
-
-    public String getMessage() {
-        return message;
     }
 }

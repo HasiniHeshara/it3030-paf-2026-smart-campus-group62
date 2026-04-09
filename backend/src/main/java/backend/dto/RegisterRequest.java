@@ -9,6 +9,15 @@ public class RegisterRequest {
     @NotBlank(message = "Full name is required")
     private String fullName;
 
+    @NotBlank(message = "Year is required")
+    private String year;
+
+    @NotBlank(message = "Faculty is required")
+    private String faculty;
+
+    @NotBlank(message = "IT number is required")
+    private String itNumber;
+
     @Email(message = "Enter a valid email")
     @NotBlank(message = "Email is required")
     private String email;
@@ -26,6 +35,30 @@ public class RegisterRequest {
 
     public void setFullName(String fullName) {
         this.fullName = fullName;
+    }
+
+    public String getYear() {
+        return year;
+    }
+
+    public void setYear(String year) {
+        this.year = year;
+    }
+
+    public String getFaculty() {
+        return faculty;
+    }
+
+    public void setFaculty(String faculty) {
+        this.faculty = faculty;
+    }
+
+    public String getItNumber() {
+        return itNumber;
+    }
+
+    public void setItNumber(String itNumber) {
+        this.itNumber = itNumber;
     }
 
     public String getEmail() {
