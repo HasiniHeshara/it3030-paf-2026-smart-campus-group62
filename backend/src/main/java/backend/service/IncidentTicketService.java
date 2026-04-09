@@ -3,6 +3,7 @@ package backend.service;
 import backend.dto.CreateIncidentTicketRequest;
 import backend.dto.IncidentTicketAttachmentResponse;
 import backend.dto.IncidentTicketCommentResponse;
+import backend.dto.IncidentTicketAssignmentRequest;
 import backend.dto.IncidentTicketResponse;
 import backend.dto.IncidentTicketStatusUpdateRequest;
 import backend.entity.IncidentTicketAttachment;
@@ -71,14 +72,10 @@ public class IncidentTicketService {
     public IncidentTicketResponse updateIncidentTicketStatus(Long incidentTicketId,
                                                              IncidentTicketStatusUpdateRequest request,
                                                              boolean isAdmin) {
-        if (!isAdmin) {
-            throw new AccessDeniedException("Only admin can update incident ticket status");
-        }
-
         IncidentTicket incidentTicket = incidentTicketRepository.findById(incidentTicketId)
                 .orElseThrow(() -> new ResourceNotFoundException("Incident ticket not found with id: " + incidentTicketId));
 
-        validateStatusTransition(incidentTicket.getStatus(), request.getStatus(), request.getReason());
+        validateStatusTransition(incidentTicket, request.getStatus(), request.getReason(), request.getResolutionNotes(), isAdmin);
 
         incidentTicket.setStatus(request.getStatus());
 
@@ -90,6 +87,55 @@ public class IncidentTicketService {
             if (request.getResolutionNotes() != null && !request.getResolutionNotes().isBlank()) {
                 incidentTicket.setResolutionNotes(request.getResolutionNotes());
             }
+        }
+
+        return mapToResponse(incidentTicketRepository.save(incidentTicket));
+    }
+
+    @Transactional
+    public IncidentTicketResponse assignIncidentTicket(Long incidentTicketId,
+                                                       IncidentTicketAssignmentRequest request,
+                                                       boolean isAdmin) {
+        if (!isAdmin) {
+            throw new AccessDeniedException("Only admin can assign incident tickets");
+        }
+
+        IncidentTicket incidentTicket = incidentTicketRepository.findById(incidentTicketId)
+                .orElseThrow(() -> new ResourceNotFoundException("Incident ticket not found with id: " + incidentTicketId));
+
+        User assignee = userRepository.findById(request.getAssigneeUserId())
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + request.getAssigneeUserId()));
+
+        if (assignee.getRole() != User.Role.ADMIN && assignee.getRole() != User.Role.TECHNICIAN) {
+            throw new BadRequestException("Only admin or technician users can be assigned to tickets");
+        }
+
+        incidentTicket.setAssignedTo(assignee);
+
+        return mapToResponse(incidentTicketRepository.save(incidentTicket));
+    }
+
+    @Transactional
+    public IncidentTicketResponse updateAssignedTicketStatus(Long incidentTicketId,
+                                                            IncidentTicketStatusUpdateRequest request,
+                                                            String userEmail) {
+        IncidentTicket incidentTicket = incidentTicketRepository.findById(incidentTicketId)
+                .orElseThrow(() -> new ResourceNotFoundException("Incident ticket not found with id: " + incidentTicketId));
+
+        User currentUser = userRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + userEmail));
+
+        if (incidentTicket.getAssignedTo() == null || !incidentTicket.getAssignedTo().getId().equals(currentUser.getId())) {
+            throw new AccessDeniedException("Only the assigned user can update this ticket");
+        }
+
+        validateAssignedUserTransition(incidentTicket.getStatus(), request.getStatus(), request.getResolutionNotes());
+
+        incidentTicket.setStatus(request.getStatus());
+        incidentTicket.setRejectionReason(null);
+
+        if (request.getStatus() == IncidentTicketStatus.RESOLVED) {
+            incidentTicket.setResolutionNotes(request.getResolutionNotes());
         }
 
         return mapToResponse(incidentTicketRepository.save(incidentTicket));
@@ -198,30 +244,75 @@ public class IncidentTicketService {
         }
     }
 
-    private void validateStatusTransition(IncidentTicketStatus currentStatus,
+    private void validateStatusTransition(IncidentTicket incidentTicket,
                                           IncidentTicketStatus targetStatus,
-                                          String reason) {
+                                          String reason,
+                                          String resolutionNotes,
+                                          boolean isAdmin) {
+        IncidentTicketStatus currentStatus = incidentTicket.getStatus();
+
+        if (currentStatus == null || targetStatus == null) {
+            throw new BadRequestException("Status is required");
+        }
+
+        boolean validTransition;
+        if (isAdmin) {
+            validTransition = switch (currentStatus) {
+                case OPEN -> targetStatus == IncidentTicketStatus.IN_PROGRESS || targetStatus == IncidentTicketStatus.REJECTED;
+                case IN_PROGRESS -> targetStatus == IncidentTicketStatus.RESOLVED || targetStatus == IncidentTicketStatus.REJECTED;
+                case RESOLVED -> targetStatus == IncidentTicketStatus.CLOSED;
+                case CLOSED, REJECTED -> false;
+            };
+        } else {
+            validTransition = switch (currentStatus) {
+                case OPEN -> targetStatus == IncidentTicketStatus.IN_PROGRESS;
+                case IN_PROGRESS -> targetStatus == IncidentTicketStatus.RESOLVED;
+                case RESOLVED, CLOSED, REJECTED -> false;
+            };
+        }
+
+        if (!validTransition) {
+            throw new BadRequestException("Invalid ticket status transition from " + currentStatus + " to " + targetStatus);
+        }
+
+        if (isAdmin) {
+            if (targetStatus == IncidentTicketStatus.REJECTED && (reason == null || reason.isBlank())) {
+                throw new BadRequestException("Reason is required when rejecting a ticket");
+            }
+
+            if (targetStatus != IncidentTicketStatus.REJECTED && reason != null && !reason.isBlank()) {
+                throw new BadRequestException("Reason is only allowed when rejecting a ticket");
+            }
+        }
+
+        if (!isAdmin && resolutionNotes != null && !resolutionNotes.isBlank() && targetStatus != IncidentTicketStatus.RESOLVED) {
+            throw new BadRequestException("Resolution notes can only be added when resolving a ticket");
+        }
+
+        if (!isAdmin && targetStatus == IncidentTicketStatus.RESOLVED && (resolutionNotes == null || resolutionNotes.isBlank())) {
+            throw new BadRequestException("Resolution notes are required when resolving a ticket");
+        }
+    }
+
+    private void validateAssignedUserTransition(IncidentTicketStatus currentStatus,
+                                                IncidentTicketStatus targetStatus,
+                                                String resolutionNotes) {
         if (currentStatus == null || targetStatus == null) {
             throw new BadRequestException("Status is required");
         }
 
         boolean validTransition = switch (currentStatus) {
-            case OPEN -> targetStatus == IncidentTicketStatus.IN_PROGRESS || targetStatus == IncidentTicketStatus.REJECTED;
-            case IN_PROGRESS -> targetStatus == IncidentTicketStatus.RESOLVED || targetStatus == IncidentTicketStatus.REJECTED;
-            case RESOLVED -> targetStatus == IncidentTicketStatus.CLOSED;
-            case CLOSED, REJECTED -> false;
+            case OPEN -> targetStatus == IncidentTicketStatus.IN_PROGRESS;
+            case IN_PROGRESS -> targetStatus == IncidentTicketStatus.RESOLVED;
+            case RESOLVED, CLOSED, REJECTED -> false;
         };
 
         if (!validTransition) {
             throw new BadRequestException("Invalid ticket status transition from " + currentStatus + " to " + targetStatus);
         }
 
-        if (targetStatus == IncidentTicketStatus.REJECTED && (reason == null || reason.isBlank())) {
-            throw new BadRequestException("Reason is required when rejecting a ticket");
-        }
-
-        if (targetStatus != IncidentTicketStatus.REJECTED && reason != null && !reason.isBlank()) {
-            throw new BadRequestException("Reason is only allowed when rejecting a ticket");
+        if (targetStatus == IncidentTicketStatus.RESOLVED && (resolutionNotes == null || resolutionNotes.isBlank())) {
+            throw new BadRequestException("Resolution notes are required when resolving a ticket");
         }
     }
 }
