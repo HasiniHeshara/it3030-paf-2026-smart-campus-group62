@@ -10,6 +10,8 @@ import java.util.List;
 @Repository
 public interface IncidentTicketRepository extends JpaRepository<IncidentTicket, Long> {
 
+    List<IncidentTicket> findAllByOrderByUpdatedAtDesc();
+
     List<IncidentTicket> findByReportedByIdOrderByCreatedAtDesc(Long reportedById);
 
     List<IncidentTicket> findByAssignedToIdOrderByUpdatedAtDesc(Long assignedToId);

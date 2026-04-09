@@ -73,6 +73,49 @@ public class IncidentTicketService {
         return mapToResponse(incidentTicketRepository.save(incidentTicket));
     }
 
+    public IncidentTicketResponse getIncidentTicketById(Long incidentTicketId, String userEmail, boolean isAdmin) {
+        IncidentTicket incidentTicket = incidentTicketRepository.findById(incidentTicketId)
+                .orElseThrow(() -> new ResourceNotFoundException("Incident ticket not found with id: " + incidentTicketId));
+
+        if (!isAdmin && !canAccessTicket(incidentTicket, userEmail)) {
+            throw new AccessDeniedException("You do not have access to this incident ticket");
+        }
+
+        return mapToResponse(incidentTicket);
+    }
+
+    public List<IncidentTicketResponse> getMyReportedTickets(String userEmail) {
+        User currentUser = userRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + userEmail));
+
+        return incidentTicketRepository.findByReportedByIdOrderByCreatedAtDesc(currentUser.getId())
+                .stream()
+                .map(this::mapToResponse)
+                .toList();
+    }
+
+    public List<IncidentTicketResponse> getAssignedTickets(String userEmail) {
+        User currentUser = userRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + userEmail));
+
+        return incidentTicketRepository.findByAssignedToIdOrderByUpdatedAtDesc(currentUser.getId())
+                .stream()
+                .map(this::mapToResponse)
+                .toList();
+    }
+
+    public List<IncidentTicketResponse> getAllTickets(IncidentTicketStatus status, boolean isAdmin) {
+        if (!isAdmin) {
+            throw new AccessDeniedException("Only admin can view all incident tickets");
+        }
+
+        List<IncidentTicket> tickets = status == null
+                ? incidentTicketRepository.findAllByOrderByUpdatedAtDesc()
+                : incidentTicketRepository.findByStatusOrderByUpdatedAtDesc(status);
+
+        return tickets.stream().map(this::mapToResponse).toList();
+    }
+
     @Transactional
     public IncidentTicketResponse updateIncidentTicketStatus(Long incidentTicketId,
                                                              IncidentTicketStatusUpdateRequest request,
@@ -413,5 +456,14 @@ public class IncidentTicketService {
         if (targetStatus == IncidentTicketStatus.RESOLVED && (resolutionNotes == null || resolutionNotes.isBlank())) {
             throw new BadRequestException("Resolution notes are required when resolving a ticket");
         }
+    }
+
+    private boolean canAccessTicket(IncidentTicket incidentTicket, String userEmail) {
+        if (incidentTicket.getReportedBy() != null && incidentTicket.getReportedBy().getEmail().equalsIgnoreCase(userEmail)) {
+            return true;
+        }
+
+        return incidentTicket.getAssignedTo() != null
+                && incidentTicket.getAssignedTo().getEmail().equalsIgnoreCase(userEmail);
     }
 }
