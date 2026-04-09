@@ -2,9 +2,9 @@ package backend.service;
 
 import backend.dto.CreateIncidentTicketRequest;
 import backend.dto.IncidentTicketAttachmentResponse;
-import backend.dto.IncidentTicketAttachmentResponse;
 import backend.dto.IncidentTicketCommentResponse;
 import backend.dto.IncidentTicketResponse;
+import backend.dto.IncidentTicketStatusUpdateRequest;
 import backend.entity.IncidentTicketAttachment;
 import backend.entity.IncidentTicket;
 import backend.entity.Resource;
@@ -16,9 +16,10 @@ import backend.repository.IncidentTicketAttachmentRepository;
 import backend.repository.IncidentTicketRepository;
 import backend.repository.ResourceRepository;
 import backend.repository.UserRepository;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -62,6 +63,34 @@ public class IncidentTicketService {
         incidentTicket.setPreferredContactPhone(request.getPreferredContactPhone());
         incidentTicket.setStatus(IncidentTicketStatus.OPEN);
         incidentTicket.setReportedBy(reportedBy);
+
+        return mapToResponse(incidentTicketRepository.save(incidentTicket));
+    }
+
+    @Transactional
+    public IncidentTicketResponse updateIncidentTicketStatus(Long incidentTicketId,
+                                                             IncidentTicketStatusUpdateRequest request,
+                                                             boolean isAdmin) {
+        if (!isAdmin) {
+            throw new AccessDeniedException("Only admin can update incident ticket status");
+        }
+
+        IncidentTicket incidentTicket = incidentTicketRepository.findById(incidentTicketId)
+                .orElseThrow(() -> new ResourceNotFoundException("Incident ticket not found with id: " + incidentTicketId));
+
+        validateStatusTransition(incidentTicket.getStatus(), request.getStatus(), request.getReason());
+
+        incidentTicket.setStatus(request.getStatus());
+
+        if (request.getStatus() == IncidentTicketStatus.REJECTED) {
+            incidentTicket.setRejectionReason(request.getReason());
+            incidentTicket.setResolutionNotes(null);
+        } else {
+            incidentTicket.setRejectionReason(null);
+            if (request.getResolutionNotes() != null && !request.getResolutionNotes().isBlank()) {
+                incidentTicket.setResolutionNotes(request.getResolutionNotes());
+            }
+        }
 
         return mapToResponse(incidentTicketRepository.save(incidentTicket));
     }
@@ -166,6 +195,33 @@ public class IncidentTicketService {
 
         if (file.getOriginalFilename() == null || file.getOriginalFilename().isBlank()) {
             throw new BadRequestException("Attachment file name is required");
+        }
+    }
+
+    private void validateStatusTransition(IncidentTicketStatus currentStatus,
+                                          IncidentTicketStatus targetStatus,
+                                          String reason) {
+        if (currentStatus == null || targetStatus == null) {
+            throw new BadRequestException("Status is required");
+        }
+
+        boolean validTransition = switch (currentStatus) {
+            case OPEN -> targetStatus == IncidentTicketStatus.IN_PROGRESS || targetStatus == IncidentTicketStatus.REJECTED;
+            case IN_PROGRESS -> targetStatus == IncidentTicketStatus.RESOLVED || targetStatus == IncidentTicketStatus.REJECTED;
+            case RESOLVED -> targetStatus == IncidentTicketStatus.CLOSED;
+            case CLOSED, REJECTED -> false;
+        };
+
+        if (!validTransition) {
+            throw new BadRequestException("Invalid ticket status transition from " + currentStatus + " to " + targetStatus);
+        }
+
+        if (targetStatus == IncidentTicketStatus.REJECTED && (reason == null || reason.isBlank())) {
+            throw new BadRequestException("Reason is required when rejecting a ticket");
+        }
+
+        if (targetStatus != IncidentTicketStatus.REJECTED && reason != null && !reason.isBlank()) {
+            throw new BadRequestException("Reason is only allowed when rejecting a ticket");
         }
     }
 }
