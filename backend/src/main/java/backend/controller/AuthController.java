@@ -3,6 +3,7 @@ package backend.controller;
 import backend.dto.AuthResponse;
 import backend.dto.LoginRequest;
 import backend.dto.RegisterRequest;
+import backend.dto.UpdateProfileRequest;
 import backend.service.AuthService;
 import jakarta.validation.Valid;
 import org.springframework.http.*;
@@ -37,5 +38,13 @@ public class AuthController {
         }
 
         return ResponseEntity.ok(authService.getCurrentUser(authentication.getName()));
+    }
+
+    @PutMapping("/me")
+    public ResponseEntity<AuthResponse> updateProfile(
+            Authentication authentication,
+            @RequestBody UpdateProfileRequest request
+    ) {
+        return ResponseEntity.ok(authService.updateProfile(authentication.getName(), request));
     }
 }
