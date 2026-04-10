@@ -62,11 +62,20 @@ const FacilitiesPage = () => {
       return;
     }
 
+<<<<<<< Updated upstream
     if (resource.status === "OUT_OF_SERVICE") {
       return;
     }
 
     navigate("/bookings", { state: { resource } });
+=======
+    if (resource.status !== "ACTIVE") {
+      alert("This resource is currently not available for booking");
+      return;
+    }
+
+    navigate(`/bookings?resourceId=${resource.id}`, { state: { resource } });
+>>>>>>> Stashed changes
   };
 
   return (
@@ -125,6 +134,7 @@ const FacilitiesPage = () => {
               <p><strong>Type:</strong> {resource.type}</p>
               <p><strong>Capacity:</strong> {resource.capacity}</p>
               <p><strong>Location:</strong> {resource.location}</p>
+<<<<<<< Updated upstream
               <p><strong>Availability:</strong> {resource.availabilityStart} - {resource.availabilityEnd}</p>
               <p><strong>Description:</strong> {resource.description || "N/A"}</p>
 
@@ -137,6 +147,21 @@ const FacilitiesPage = () => {
                   Booking
                 </button>
               )}
+=======
+              <p>
+                <strong>Availability:</strong> {resource.availabilityStart} - {resource.availabilityEnd}
+              </p>
+              <p><strong>Status:</strong> {resource.status}</p>
+              <p><strong>Description:</strong> {resource.description || "N/A"}</p>
+
+              <button
+                className="book-btn"
+                onClick={() => handleBooking(resource)}
+                disabled={resource.status !== "ACTIVE"}
+              >
+                {resource.status === "ACTIVE" ? "Booking" : "Unavailable"}
+              </button>
+>>>>>>> Stashed changes
             </div>
           ))
         ) : (

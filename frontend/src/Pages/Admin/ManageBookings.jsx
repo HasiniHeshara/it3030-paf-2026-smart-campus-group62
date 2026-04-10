@@ -54,9 +54,7 @@ const ManageBookings = () => {
   const openActionModal = (booking, status) => {
     setSelectedBooking(booking);
     setActionStatus(status);
-    setAdminReason(
-      status === "APPROVED" ? "Approved by admin" : ""
-    );
+    setAdminReason(status === "APPROVED" ? "Approved by admin" : "");
     setMessage("");
     setError("");
   };
@@ -193,9 +191,7 @@ const ManageBookings = () => {
                     </td>
                     <td>{booking.userEmail}</td>
                     <td>{booking.bookingDate}</td>
-                    <td>
-                      {booking.startTime} - {booking.endTime}
-                    </td>
+                    <td>{booking.startTime} - {booking.endTime}</td>
                     <td>
                       <span className={`status-badge ${getStatusClass(booking.status)}`}>
                         {booking.status}
@@ -238,15 +234,9 @@ const ManageBookings = () => {
               {actionStatus === "APPROVED" ? "Approve Booking" : "Reject Booking"}
             </h3>
 
-            <p>
-              <strong>Booking ID:</strong> {selectedBooking.id}
-            </p>
-            <p>
-              <strong>Resource:</strong> {selectedBooking.resourceName}
-            </p>
-            <p>
-              <strong>User:</strong> {selectedBooking.userEmail}
-            </p>
+            <p><strong>Booking ID:</strong> {selectedBooking.id}</p>
+            <p><strong>Resource:</strong> {selectedBooking.resourceName}</p>
+            <p><strong>User:</strong> {selectedBooking.userEmail}</p>
 
             <div className="form-group">
               <label>Reason</label>
