@@ -1,19 +1,45 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { getAllResources } from "../../services/resourceService";
 import "./Home.css";
 
 const Home = () => {
+  const [resources, setResources] = useState([]);
+
+  useEffect(() => {
+    const loadResources = async () => {
+      try {
+        const response = await getAllResources();
+        setResources(response.data);
+      } catch (error) {
+        console.error("Error loading resources:", error);
+      }
+    };
+
+    loadResources();
+  }, []);
+
+  const totalResources = resources.length;
+  const activeResources = resources.filter(
+    (resource) => resource.status === "ACTIVE"
+  ).length;
+  const outOfServiceResources = resources.filter(
+    (resource) => resource.status === "OUT_OF_SERVICE"
+  ).length;
+
   return (
     <main className="page">
       <section className="hero-section">
         <div className="hero-left">
-          <span className="section-tag">Smart Campus Operations</span>
-          <h1>Manage university spaces, bookings, support requests, and updates in one place.</h1>
+          <span className="section-tag">SMART CAMPUS OPERATIONS</span>
+          <h1>
+            Manage university spaces, bookings, support requests,
+            and updates in one place.
+          </h1>
           <p>
             Smart Campus Hub connects facilities management, booking workflows,
             maintenance reporting, notifications, and secure system access into
-            one smooth university platform for students, staff, and
-            administrators.
+            one smooth university platform for students, staff, and administrators.
           </p>
 
           <div className="hero-buttons">
@@ -31,17 +57,20 @@ const Home = () => {
             <h3>Campus Snapshot</h3>
             <div className="stats-grid">
               <div className="stat-box">
-                <h4>128</h4>
-                <p>Resources Listed</p>
+                <h4>{totalResources}</h4>
+                <p>Total Resources</p>
               </div>
+
               <div className="stat-box">
-                <h4>46</h4>
-                <p>Active Bookings</p>
+                <h4>{activeResources}</h4>
+                <p>Active Resources</p>
               </div>
+
               <div className="stat-box">
-                <h4>12</h4>
-                <p>Open Tickets</p>
+                <h4>{outOfServiceResources}</h4>
+                <p>Out of Service</p>
               </div>
+
               <div className="stat-box">
                 <h4>24/7</h4>
                 <p>System Access</p>
@@ -53,7 +82,7 @@ const Home = () => {
 
       <section className="connected-section">
         <div className="section-heading">
-          <span className="section-tag">Connected Workflow</span>
+          <span className="section-tag">CONNECTED WORKFLOW</span>
           <h2>How the full system works together</h2>
           <p>
             Every module supports the next step in the university workflow,
@@ -95,36 +124,6 @@ const Home = () => {
             <p>
               The system keeps users informed about booking decisions, ticket
               progress, and new comments through notifications.
-            </p>
-          </div>
-        </div>
-      </section>
-
-      <section className="feature-highlight">
-        <div className="feature-left">
-          <span className="section-tag">Designed for Universities</span>
-          <h2>A clean and practical platform for campus operations</h2>
-          <p>
-            The interface is built to feel modern, calm, and easy to use, with
-            soft academic colors and structured sections that suit a university
-            management system.
-          </p>
-        </div>
-
-        <div className="feature-right">
-          <div className="mini-panel">
-            <h3>For Students & Staff</h3>
-            <p>
-              Browse spaces, request bookings, report problems, and stay
-              informed without switching between separate systems.
-            </p>
-          </div>
-
-          <div className="mini-panel">
-            <h3>For Admin Teams</h3>
-            <p>
-              Monitor facilities, manage approvals, review maintenance issues,
-              and control access through one dashboard-driven workflow.
             </p>
           </div>
         </div>

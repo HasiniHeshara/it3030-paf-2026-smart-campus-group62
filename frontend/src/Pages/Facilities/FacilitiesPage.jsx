@@ -7,11 +7,8 @@ const FacilitiesPage = () => {
   const navigate = useNavigate();
 
   const [resources, setResources] = useState([]);
-  const [filters, setFilters] = useState({
-    type: "",
-    capacity: "",
-    location: "",
-  });
+  const [searchBy, setSearchBy] = useState("type");
+  const [searchValue, setSearchValue] = useState("");
 
   const loadResources = async () => {
     try {
@@ -26,19 +23,22 @@ const FacilitiesPage = () => {
     loadResources();
   }, []);
 
-  const handleFilterChange = (e) => {
-    setFilters((prev) => ({
-      ...prev,
-      [e.target.name]: e.target.value,
-    }));
-  };
-
   const handleSearch = async () => {
     try {
+      if (!searchValue.trim()) {
+        loadResources();
+        return;
+      }
+
       const params = {};
-      if (filters.type) params.type = filters.type;
-      if (filters.capacity) params.capacity = filters.capacity;
-      if (filters.location) params.location = filters.location;
+
+      if (searchBy === "type") {
+        params.type = searchValue.toUpperCase().replace(/\s+/g, "_");
+      } else if (searchBy === "capacity") {
+        params.capacity = Number(searchValue);
+      } else if (searchBy === "location") {
+        params.location = searchValue;
+      }
 
       const response = await searchResources(params);
       setResources(response.data);
@@ -47,12 +47,22 @@ const FacilitiesPage = () => {
     }
   };
 
+  const handleResetSearch = () => {
+    setSearchBy("type");
+    setSearchValue("");
+    loadResources();
+  };
+
   const handleBooking = (resource) => {
     const token = localStorage.getItem("token");
 
     if (!token) {
       alert("First you should login to the system");
       navigate("/login");
+      return;
+    }
+
+    if (resource.status === "OUT_OF_SERVICE") {
       return;
     }
 
@@ -67,32 +77,31 @@ const FacilitiesPage = () => {
       </div>
 
       <div className="facilities-filter-bar">
-        <select name="type" value={filters.type} onChange={handleFilterChange}>
-          <option value="">All Types</option>
-          <option value="LECTURE_HALL">Lecture Hall</option>
-          <option value="LAB">Lab</option>
-          <option value="MEETING_ROOM">Meeting Room</option>
-          <option value="EQUIPMENT">Equipment</option>
+        <select value={searchBy} onChange={(e) => setSearchBy(e.target.value)}>
+          <option value="type">Search by Type</option>
+          <option value="capacity">Search by Capacity</option>
+          <option value="location">Search by Location</option>
         </select>
 
         <input
-          type="number"
-          name="capacity"
-          placeholder="Minimum Capacity"
-          value={filters.capacity}
-          onChange={handleFilterChange}
-        />
-
-        <input
-          type="text"
-          name="location"
-          placeholder="Location"
-          value={filters.location}
-          onChange={handleFilterChange}
+          type={searchBy === "capacity" ? "number" : "text"}
+          placeholder={
+            searchBy === "type"
+              ? "Enter type"
+              : searchBy === "capacity"
+              ? "Enter minimum capacity"
+              : "Enter location"
+          }
+          value={searchValue}
+          onChange={(e) => setSearchValue(e.target.value)}
         />
 
         <button onClick={handleSearch} className="primary-btn">
           Search
+        </button>
+
+        <button onClick={handleResetSearch} className="secondary-btn" type="button">
+          Reset
         </button>
       </div>
 
@@ -100,17 +109,34 @@ const FacilitiesPage = () => {
         {resources.length > 0 ? (
           resources.map((resource) => (
             <div className="facility-card" key={resource.id}>
-              <h3>{resource.name}</h3>
+              <div className="facility-top">
+                <h3>{resource.name}</h3>
+                <span
+                  className={
+                    resource.status === "ACTIVE"
+                      ? "status-badge active-status"
+                      : "status-badge inactive-status"
+                  }
+                >
+                  {resource.status}
+                </span>
+              </div>
+
               <p><strong>Type:</strong> {resource.type}</p>
               <p><strong>Capacity:</strong> {resource.capacity}</p>
               <p><strong>Location:</strong> {resource.location}</p>
               <p><strong>Availability:</strong> {resource.availabilityStart} - {resource.availabilityEnd}</p>
-              <p><strong>Status:</strong> {resource.status}</p>
               <p><strong>Description:</strong> {resource.description || "N/A"}</p>
 
-              <button className="book-btn" onClick={() => handleBooking(resource)}>
-                Booking
-              </button>
+              {resource.status === "OUT_OF_SERVICE" ? (
+                <button className="unavailable-btn" disabled>
+                  Unavailable
+                </button>
+              ) : (
+                <button className="book-btn" onClick={() => handleBooking(resource)}>
+                  Booking
+                </button>
+              )}
             </div>
           ))
         ) : (

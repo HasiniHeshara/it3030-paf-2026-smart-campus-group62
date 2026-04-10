@@ -187,3 +187,34 @@
     padding: 22px;
   }
 }
+
+.field-error {
+  color: #d43f3f;
+  font-size: 13px;
+  margin-top: -2px;
+}
+
+.resource-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.status-badge {
+  padding: 7px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.active-status {
+  background: #e8f8ee;
+  color: #23864d;
+}
+
+.inactive-status {
+  background: #fdeaea;
+  color: #b33a3a;
+}
