@@ -1,0 +1,146 @@
+.notifications-page {
+  min-height: 100vh;
+  background: #f5f8ff;
+  padding: 40px 20px;
+}
+
+.notifications-container {
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.notifications-header {
+  background: #eef4ff;
+  border: 1px solid #dbe5f5;
+  border-radius: 24px;
+  padding: 28px;
+  margin-bottom: 24px;
+}
+
+.notifications-header h1 {
+  margin: 0 0 10px;
+  font-size: 36px;
+  color: #172554;
+}
+
+.notifications-header p {
+  margin: 0;
+  color: #5b6b8a;
+  font-size: 16px;
+}
+
+.notifications-empty {
+  background: white;
+  border: 1px solid #dbe5f5;
+  border-radius: 20px;
+  padding: 24px;
+  text-align: center;
+  color: #5b6b8a;
+  font-size: 16px;
+}
+
+.notifications-list {
+  display: grid;
+  gap: 18px;
+}
+
+.notification-card {
+  background: white;
+  border-radius: 22px;
+  padding: 22px;
+  border: 1px solid #dbe5f5;
+  box-shadow: 0 6px 18px rgba(31, 41, 55, 0.05);
+}
+
+.notification-card.unread {
+  border-left: 6px solid #4f7cff;
+  background: #fdfefe;
+}
+
+.notification-card.read {
+  opacity: 0.92;
+}
+
+.notification-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 14px;
+  margin-bottom: 14px;
+}
+
+.notification-top h3 {
+  margin: 0 0 8px;
+  color: #1e293b;
+  font-size: 22px;
+}
+
+.notification-type {
+  display: inline-block;
+  background: #edf2ff;
+  color: #3559b7;
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.notification-status {
+  font-size: 14px;
+  font-weight: 700;
+  color: #64748b;
+}
+
+.notification-message {
+  color: #334155;
+  font-size: 16px;
+  margin-bottom: 14px;
+}
+
+.notification-date {
+  color: #64748b;
+  font-size: 14px;
+  margin-bottom: 16px;
+}
+
+.notification-actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.mark-btn,
+.delete-btn {
+  border: none;
+  border-radius: 14px;
+  padding: 11px 18px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.mark-btn {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+.delete-btn {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+.mark-btn:hover,
+.delete-btn:hover {
+  opacity: 0.92;
+}
+
+@media (max-width: 768px) {
+  .notifications-header h1 {
+    font-size: 28px;
+  }
+
+  .notification-top {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
