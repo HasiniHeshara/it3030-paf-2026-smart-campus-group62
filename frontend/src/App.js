@@ -6,6 +6,10 @@ import NavBar from "./Components/NavBar";
 import ProtectedRoute from "./Components/ProtectedRoute";
 import AdminRoute from "./Components/AdminRoute";
 
+
+import AddResource from "./Pages/Admin/AddResource.jsx";
+import Facilities from "./Pages/Facilities/FacilitiesPage.jsx";
+
 import Home from "./Pages/Home/Home";
 import LoginPage from "./Pages/Auth/LoginPage";
 import RegisterPage from "./Pages/Auth/RegisterPage";
@@ -27,6 +31,9 @@ function App() {
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/oauth2/redirect" element={<OAuth2RedirectHandler />} />
+
+          <Route path="/admin/add-resource" element={<AddResource />} />
+          <Route path="/facilities" element={<Facilities />} />
 
           <Route
             path="/dashboard"
