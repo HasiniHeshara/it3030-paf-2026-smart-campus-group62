@@ -8,7 +8,7 @@ import java.time.LocalDateTime;
 public class User {
 
     public enum Role {
-        USER, ADMIN
+        USER, ADMIN, TECHNICIAN
     }
 
     public enum AuthProvider {
@@ -22,6 +22,7 @@ public class User {
     @Column(nullable = false)
     private String fullName;
 
+    @Column(name = "academic_year", nullable = false)
     private String year;
     private String faculty;
 
