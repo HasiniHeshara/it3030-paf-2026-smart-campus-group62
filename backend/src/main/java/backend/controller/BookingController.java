@@ -8,6 +8,7 @@ import backend.service.BookingService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -24,13 +25,19 @@ public class BookingController {
     }
 
     @PostMapping
-    public ResponseEntity<BookingResponse> createBooking(@Valid @RequestBody BookingRequest request) {
-        return new ResponseEntity<>(bookingService.createBooking(request), HttpStatus.CREATED);
+    public ResponseEntity<BookingResponse> createBooking(
+            Authentication authentication,
+            @Valid @RequestBody BookingRequest request
+    ) {
+        return new ResponseEntity<>(
+                bookingService.createBooking(request, authentication.getName()),
+                HttpStatus.CREATED
+        );
     }
 
     @GetMapping("/my")
-    public ResponseEntity<List<BookingResponse>> getMyBookings(@RequestParam String userEmail) {
-        return ResponseEntity.ok(bookingService.getMyBookings(userEmail));
+    public ResponseEntity<List<BookingResponse>> getMyBookings(Authentication authentication) {
+        return ResponseEntity.ok(bookingService.getMyBookings(authentication.getName()));
     }
 
     @GetMapping
@@ -58,9 +65,9 @@ public class BookingController {
     @PatchMapping("/{id}/cancel")
     public ResponseEntity<BookingResponse> cancelBooking(
             @PathVariable Long id,
-            @RequestParam String userEmail
+            Authentication authentication
     ) {
-        return ResponseEntity.ok(bookingService.cancelBooking(id, userEmail));
+        return ResponseEntity.ok(bookingService.cancelBooking(id, authentication.getName()));
     }
 
     @DeleteMapping("/{id}")

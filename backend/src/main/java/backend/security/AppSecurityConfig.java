@@ -39,10 +39,10 @@ public class AppSecurityConfig {
                 .cors(Customizer.withDefaults())
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(session ->
-                session.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
+                        session.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/login", "/api/auth/register").permitAll()
-                .requestMatchers("/oauth2/**", "/login/oauth2/**").permitAll()
+                        .requestMatchers("/oauth2/**", "/login/oauth2/**").permitAll()
                         .requestMatchers("/api/auth/me").authenticated()
 
                         .requestMatchers(HttpMethod.GET, "/api/resources/**").permitAll()
@@ -50,23 +50,27 @@ public class AppSecurityConfig {
                         .requestMatchers(HttpMethod.PUT, "/api/resources/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/api/resources/**").hasRole("ADMIN")
 
-                        .requestMatchers(HttpMethod.POST, "/api/bookings").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/bookings/my").permitAll()
-                        .requestMatchers(HttpMethod.PATCH, "/api/bookings/*/cancel").permitAll()
-
+                        .requestMatchers(HttpMethod.POST, "/api/bookings").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/api/bookings/my").authenticated()
+                        .requestMatchers(HttpMethod.PATCH, "/api/bookings/*/cancel").authenticated()
                         .requestMatchers(HttpMethod.GET, "/api/bookings").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.GET, "/api/bookings/*").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.PATCH, "/api/bookings/*/status").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/api/bookings/*").hasRole("ADMIN")
 
+                        .requestMatchers(HttpMethod.GET, "/api/notifications/me").authenticated()
+                        .requestMatchers(HttpMethod.PATCH, "/api/notifications/*/read").authenticated()
+                        .requestMatchers(HttpMethod.DELETE, "/api/notifications/*").authenticated()
+                        .requestMatchers(HttpMethod.POST, "/api/notifications").hasRole("ADMIN")
+
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated()
-        )
-        .oauth2Login(oauth2 -> oauth2
-            .userInfoEndpoint(userInfo -> userInfo.userService(customOAuth2UserService))
-            .successHandler(oAuth2LoginSuccessHandler)
-            .failureUrl("http://localhost:3000/login?oauthError=google_auth_failed")
-        );
+                )
+                .oauth2Login(oauth2 -> oauth2
+                        .userInfoEndpoint(userInfo -> userInfo.userService(customOAuth2UserService))
+                        .successHandler(oAuth2LoginSuccessHandler)
+                        .failureUrl("http://localhost:3000/login?oauthError=google_auth_failed")
+                );
 
         http.addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 

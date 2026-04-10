@@ -10,7 +10,6 @@ import {
 
 const initialForm = {
   resourceId: "",
-  userEmail: "",
   bookingDate: "",
   startTime: "",
   endTime: "",
@@ -24,7 +23,6 @@ const BookingPage = () => {
 
   const [resources, setResources] = useState([]);
   const [formData, setFormData] = useState(initialForm);
-  const [myEmail, setMyEmail] = useState("");
   const [myBookings, setMyBookings] = useState([]);
   const [loadingResources, setLoadingResources] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -35,9 +33,25 @@ const BookingPage = () => {
 
   const formRef = useRef(null);
 
+  const currentUser = useMemo(() => {
+    try {
+      return JSON.parse(localStorage.getItem("user") || "{}");
+    } catch {
+      return {};
+    }
+  }, []);
+
+  const currentUserEmail = currentUser?.email || "";
+
   useEffect(() => {
     loadResources();
   }, []);
+
+  useEffect(() => {
+    if (currentUserEmail) {
+      loadMyBookings();
+    }
+  }, [currentUserEmail]);
 
   useEffect(() => {
     if (selectedFromUrl && resources.length > 0) {
@@ -83,11 +97,11 @@ const BookingPage = () => {
     }
   };
 
-  const loadMyBookings = async (email) => {
+  const loadMyBookings = async () => {
     try {
       setLoadingBookings(true);
       setError("");
-      const data = await getMyBookings(email);
+      const data = await getMyBookings();
       setMyBookings(Array.isArray(data) ? data : []);
     } catch (err) {
       setError(err.message);
@@ -126,8 +140,11 @@ const BookingPage = () => {
 
     try {
       const payload = {
-        ...formData,
         resourceId: Number(formData.resourceId),
+        bookingDate: formData.bookingDate,
+        startTime: formData.startTime,
+        endTime: formData.endTime,
+        purpose: formData.purpose,
         expectedAttendees: Number(formData.expectedAttendees),
       };
 
@@ -137,10 +154,7 @@ const BookingPage = () => {
         `Booking request submitted successfully. Current status: ${result.status}`
       );
       setFormData(initialForm);
-
-      if (myEmail) {
-        loadMyBookings(myEmail);
-      }
+      await loadMyBookings();
     } catch (err) {
       setError(err.message);
     } finally {
@@ -148,21 +162,7 @@ const BookingPage = () => {
     }
   };
 
-  const handleViewBookings = (e) => {
-    e.preventDefault();
-    if (!myEmail.trim()) {
-      setError("Please enter your email to view your bookings");
-      return;
-    }
-    loadMyBookings(myEmail.trim());
-  };
-
   const handleCancelBooking = async (bookingId) => {
-    if (!myEmail.trim()) {
-      setError("Enter your email first before cancelling a booking");
-      return;
-    }
-
     const confirmed = window.confirm(
       "Are you sure you want to cancel this approved booking?"
     );
@@ -174,10 +174,10 @@ const BookingPage = () => {
       setMessage("");
       setError("");
 
-      await cancelBooking(bookingId, myEmail.trim());
+      await cancelBooking(bookingId);
 
       setMessage("Booking cancelled successfully");
-      loadMyBookings(myEmail.trim());
+      await loadMyBookings();
     } catch (err) {
       setError(err.message);
     } finally {
@@ -299,14 +299,11 @@ const BookingPage = () => {
 
             <div className="form-grid">
               <div className="form-group">
-                <label>Email</label>
+                <label>Logged in as</label>
                 <input
-                  type="email"
-                  name="userEmail"
-                  value={formData.userEmail}
-                  onChange={handleChange}
-                  placeholder="student@gmail.com"
-                  required
+                  type="text"
+                  value={currentUserEmail || "No logged-in user"}
+                  readOnly
                 />
               </div>
 
@@ -375,7 +372,7 @@ const BookingPage = () => {
             <button
               type="submit"
               className="submit-btn"
-              disabled={submitting || !formData.resourceId}
+              disabled={submitting || !formData.resourceId || !currentUserEmail}
             >
               {submitting ? "Submitting..." : "Submit Booking Request"}
             </button>
@@ -386,26 +383,16 @@ const BookingPage = () => {
       <section className="booking-panel booking-history-panel">
         <div className="panel-header">
           <h2>My Bookings</h2>
-          <p>Enter your email and view your submitted booking requests.</p>
+          <p>Bookings are shown for your logged-in account.</p>
         </div>
 
-        <form className="my-bookings-form" onSubmit={handleViewBookings}>
-          <input
-            type="email"
-            value={myEmail}
-            onChange={(e) => setMyEmail(e.target.value)}
-            placeholder="Enter your email"
-          />
-          <button type="submit" className="secondary-action-btn">
-            View My Bookings
-          </button>
-        </form>
-
-        {loadingBookings ? (
+        {!currentUserEmail ? (
+          <p className="muted-text">Please login to view your bookings.</p>
+        ) : loadingBookings ? (
           <p className="muted-text">Loading your bookings...</p>
         ) : myBookings.length === 0 ? (
           <p className="muted-text">
-            No bookings found yet. Enter your email and check your booking history.
+            No bookings found yet for your account.
           </p>
         ) : (
           <div className="booking-history-grid">
