@@ -6,7 +6,6 @@ import NavBar from "./Components/NavBar";
 import ProtectedRoute from "./Components/ProtectedRoute";
 import AdminRoute from "./Components/AdminRoute";
 
-
 import AddResource from "./Pages/Admin/AddResource.jsx";
 import Facilities from "./Pages/Facilities/FacilitiesPage.jsx";
 
@@ -19,6 +18,8 @@ import ManageUsers from "./Pages/Admin/ManageUsers";
 import ManageBookings from "./Pages/Admin/ManageBookings.jsx";
 import BookingPage from "./Pages/Home/Bookings/BookingPage";
 import OAuth2RedirectHandler from "./Pages/Auth/OAuth2RedirectHandler";
+import NotificationsPage from "./Pages/Notifications/NotificationsPage";
+
 import "./App.css";
 
 function App() {
@@ -49,6 +50,15 @@ function App() {
             element={
               <ProtectedRoute>
                 <BookingPage />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/notifications"
+            element={
+              <ProtectedRoute>
+                <NotificationsPage />
               </ProtectedRoute>
             }
           />
