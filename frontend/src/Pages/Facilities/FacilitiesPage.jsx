@@ -48,15 +48,15 @@ const FacilitiesPage = () => {
   };
 
   const handleBooking = (resource) => {
-    const isLoggedIn = localStorage.getItem("isLoggedIn");
+    const token = localStorage.getItem("token");
 
-    if (!isLoggedIn) {
+    if (!token) {
       alert("First you should login to the system");
       navigate("/login");
       return;
     }
 
-    alert(`Proceed to booking for ${resource.name}`);
+    navigate("/bookings", { state: { resource } });
   };
 
   return (
