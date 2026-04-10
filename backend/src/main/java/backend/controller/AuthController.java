@@ -3,6 +3,7 @@ package backend.controller;
 import backend.dto.AuthResponse;
 import backend.dto.LoginRequest;
 import backend.dto.RegisterRequest;
+import backend.dto.UpdateProfileRequest;
 import backend.service.AuthService;
 import jakarta.validation.Valid;
 import org.springframework.http.*;
@@ -32,8 +33,18 @@ public class AuthController {
 
     @GetMapping("/me")
     public ResponseEntity<AuthResponse> getCurrentUser(Authentication authentication) {
+        if (authentication == null || authentication.getName() == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
         return ResponseEntity.ok(authService.getCurrentUser(authentication.getName()));
     }
 
-
+    @PutMapping("/me")
+    public ResponseEntity<AuthResponse> updateProfile(
+            Authentication authentication,
+            @RequestBody UpdateProfileRequest request
+    ) {
+        return ResponseEntity.ok(authService.updateProfile(authentication.getName(), request));
+    }
 }

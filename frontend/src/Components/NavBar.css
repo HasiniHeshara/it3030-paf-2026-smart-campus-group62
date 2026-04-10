@@ -133,3 +133,24 @@
     font-size: 14px;
   }
 }
+.nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.nav-register-btn {
+  text-decoration: none;
+  padding: 12px 22px;
+  border-radius: 16px;
+  background: linear-gradient(90deg, #8fb3ff, #c7b6ff);
+  color: #1b2b52;
+  font-weight: 700;
+  border: 1px solid rgba(90, 120, 200, 0.2);
+  transition: 0.3s ease;
+}
+
+.nav-register-btn:hover {
+  transform: translateY(-1px);
+  opacity: 0.95;
+}
