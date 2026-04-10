@@ -367,3 +367,34 @@
     min-width: 100%;
   }
 }
+
+.selected-resource-note {
+  margin: 12px 0 18px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: #eef5ff;
+  border: 1px solid #d6e5fb;
+  color: #425b79;
+  font-size: 14px;
+}
+
+.history-actions {
+  margin-top: 16px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.cancel-booking-btn {
+  border: 1px solid #f0c7cf;
+  background: #fff1f4;
+  color: #b24e63;
+  border-radius: 12px;
+  padding: 10px 16px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.cancel-booking-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
