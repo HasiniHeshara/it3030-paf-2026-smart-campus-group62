@@ -64,8 +64,6 @@ export async function getMyBookings(userEmail) {
     throw new Error(data?.message || "Failed to fetch bookings");
   }
 
-  return response.json();
-}
   return Array.isArray(data) ? data : [];
 }
 

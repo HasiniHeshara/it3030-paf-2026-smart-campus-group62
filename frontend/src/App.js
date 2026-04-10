@@ -15,63 +15,17 @@ import RegisterPage from "./Pages/Auth/RegisterPage";
 import UserDashboard from "./Pages/Dashboard/UserDashboard";
 import AdminDashboard from "./Pages/Admin/AdminDash";
 import ManageUsers from "./Pages/Admin/ManageUsers";
-import IncidentTicketsPage from "./Pages/Maintenance/IncidentTicketsPage";
-import { AuthProvider } from "./context/AuthContext";
-import BookingPage from "./Pages/Home/Bookings/BookingPage.jsx";
 import ManageBookings from "./Pages/Admin/ManageBookings.jsx";
 import BookingPage from "./Pages/Home/Bookings/BookingPage";
 import OAuth2RedirectHandler from "./Pages/Auth/OAuth2RedirectHandler";
 import NotificationsPage from "./Pages/Notifications/NotificationsPage";
+import IncidentTicketsPage from "./Pages/Maintenance/IncidentTicketsPage";
 
 import "./App.css";
 
 function App() {
   return (
     <AuthProvider>
-      <NavBar />
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/register" element={<RegisterPage />} />
-
-        <Route
-          path="/dashboard"
-          element={
-            <ProtectedRoute>
-              <UserDashboard />
-            </ProtectedRoute>
-          }
-        />
-
-        <Route
-          path="/admin-dashboard"
-          element={
-            <AdminRoute>
-              <AdminDashboard />
-            </AdminRoute>
-          }
-        />
-
-        <Route
-          path="/admin/users"
-          element={
-            <AdminRoute>
-              <ManageUsers />
-            </AdminRoute>
-          }
-        />
-
-        <Route path="/bookings" element={<BookingPage />} />
-
-        <Route
-          path="/maintenance"
-          element={
-            <ProtectedRoute>
-              <IncidentTicketsPage />
-            </ProtectedRoute>
-          }
-        />
-      </Routes>
       <div className="app-shell">
         <NavBar />
         <Routes>
@@ -127,6 +81,16 @@ function App() {
               </AdminRoute>
             }
           />
+
+         <Route
+          path="/maintenance"
+           element={
+             <ProtectedRoute>
+              <IncidentTicketsPage />
+            </ProtectedRoute>
+           }
+         />
+
 
           <Route
             path="/admin/manage-bookings"
