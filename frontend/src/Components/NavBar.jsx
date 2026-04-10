@@ -13,6 +13,9 @@ const Navbar = () => {
     navigate("/login");
   };
 
+  const dashboardPath =
+    user?.role === "ADMIN" ? "/admin-dashboard" : "/dashboard";
+
   return (
     <header className="navbar">
       <div className="navbar-container">
@@ -45,7 +48,7 @@ const Navbar = () => {
         <div className="nav-actions">
           {user ? (
             <>
-              <Link to="/dashboard" className="nav-login-btn">
+              <Link to={dashboardPath} className="nav-login-btn">
                 Dashboard
               </Link>
               <button className="nav-login-btn" onClick={handleLogout}>

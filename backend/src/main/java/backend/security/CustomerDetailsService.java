@@ -19,12 +19,22 @@ public class CustomerDetailsService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+
+        // allow hardcoded admin to access protected admin routes
+        if ("admin@sliit.lk".equals(email)) {
+            return new org.springframework.security.core.userdetails.User(
+                    "admin@sliit.lk",
+                    "",
+                    List.of(new SimpleGrantedAuthority("ROLE_ADMIN"))
+            );
+        }
+
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
         return new org.springframework.security.core.userdetails.User(
                 user.getEmail(),
-                user.getPassword(),
+                user.getPassword() != null ? user.getPassword() : "",
                 List.of(new SimpleGrantedAuthority("ROLE_" + user.getRole().name()))
         );
     }
