@@ -3,6 +3,7 @@ package backend.service;
 import backend.dto.AuthResponse;
 import backend.dto.LoginRequest;
 import backend.dto.RegisterRequest;
+import backend.dto.UpdateProfileRequest;
 import backend.entity.User;
 import backend.repository.UserRepository;
 import backend.security.JwtService;
@@ -95,6 +96,36 @@ public class AuthService {
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
         return buildAuthResponse(user, null, "User fetched successfully");
+    }
+
+    public AuthResponse updateProfile(String currentEmail, UpdateProfileRequest request) {
+        if ("admin@sliit.lk".equals(currentEmail)) {
+            throw new RuntimeException("Hardcoded admin profile cannot be edited here");
+        }
+
+        User user = userRepository.findByEmail(currentEmail)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        if (request.getEmail() != null &&
+                !request.getEmail().equalsIgnoreCase(user.getEmail()) &&
+                userRepository.existsByEmail(request.getEmail())) {
+            throw new RuntimeException("Email is already registered");
+        }
+
+        if (request.getItNumber() != null &&
+                !request.getItNumber().equalsIgnoreCase(user.getItNumber()) &&
+                userRepository.existsByItNumber(request.getItNumber())) {
+            throw new RuntimeException("IT number is already registered");
+        }
+
+        user.setFullName(request.getFullName());
+        user.setItNumber(request.getItNumber());
+        user.setFaculty(request.getFaculty());
+        user.setYear(request.getYear());
+        user.setEmail(request.getEmail());
+
+        User updatedUser = userRepository.save(user);
+        return buildAuthResponse(updatedUser, null, "Profile updated successfully");
     }
 
     private AuthResponse buildAuthResponse(User user, String token, String message) {
