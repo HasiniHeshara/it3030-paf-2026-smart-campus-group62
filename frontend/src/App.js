@@ -16,11 +16,11 @@ import BookingPage from "./Pages/Home/Bookings/BookingPage";
 // import OAuth2RedirectHandler from "./Pages/Auth/OAuth2RedirectHandler";
 import ManageBookings from "./Pages/Admin/ManageBookings.jsx";
 import { AuthProvider } from "./context/AuthContext";
-import Home from "./Pages/Home/Home";
+import HomePage from "./Pages/Home/Home.jsx";
 import BookingPage from "./Pages/Home/Bookings/BookingPage.jsx";
 import "./App.css";
-import OAuth2RedirectHandler from "./Pages/Auth/OAuth2RedirectHandler";
-
+import AddResource from "./Pages/Admin/AddResource";
+import FacilitiesPage from "./Pages/Facilities/FacilitiesPage";
 
 function App() {
   return (
@@ -30,6 +30,7 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
+        <Route path="/admin/add-resource" element={<AddResource />} />
         <Route path="/oauth2/redirect" element={<OAuth2RedirectHandler />} />
       <div className="app-shell">
         <NavBar />
@@ -91,6 +92,11 @@ function App() {
             </AdminRoute>
           }
         />
+        <Route path="/bookings" element={<BookingPage />} />
+
+         <Route path="/facilities" element={<FacilitiesPage />} />
+
+      
       </Routes>
           <Route path="/bookings" element={<BookingPage />} />
 

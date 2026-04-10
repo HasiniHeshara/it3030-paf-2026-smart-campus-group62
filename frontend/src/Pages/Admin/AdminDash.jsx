@@ -53,6 +53,11 @@ const AdminDashboard = () => {
             <h3>Notifications</h3>
             <p>Send and review important system notifications.</p>
           </div>
+
+          <div className="admin-card" onClick={() => navigate("/admin/add-resource")}>
+            <h3>Add Resources</h3>
+            <p>Add lecture halls, labs, meeting rooms, and equipment with full metadata.</p>
+        </div>
         </div>
       </div>
     </div>
