@@ -23,6 +23,7 @@ const AddResource = () => {
   const [formData, setFormData] = useState(initialForm);
   const [resources, setResources] = useState([]);
   const [editingId, setEditingId] = useState(null);
+  const [errors, setErrors] = useState({});
 
   const [searchBy, setSearchBy] = useState("type");
   const [searchValue, setSearchValue] = useState("");
@@ -70,61 +71,121 @@ const AddResource = () => {
     }
   };
 
+  const validateField = (name, value, updatedForm = formData) => {
+    switch (name) {
+      case "name":
+        if (!value.trim()) return `${getNameLabel()} is required`;
+        return "";
+
+      case "capacity":
+        if (updatedForm.type === "EQUIPMENT") return "";
+        if (!value) return "Capacity is required";
+        if (Number(value) <= 0) return "Capacity must be greater than 0";
+        return "";
+
+      case "location":
+        if (!value.trim()) return "Location is required";
+        return "";
+
+      case "availabilityStart":
+        if (!value) return "Start time is required";
+        if (updatedForm.availabilityEnd && value >= updatedForm.availabilityEnd) {
+          return "Start time must be before end time";
+        }
+        return "";
+
+      case "availabilityEnd":
+        if (!value) return "End time is required";
+        if (updatedForm.availabilityStart && value <= updatedForm.availabilityStart) {
+          return "End time must be after start time";
+        }
+        return "";
+
+      default:
+        return "";
+    }
+  };
+
+  const validateForm = () => {
+    const newErrors = {
+      name: validateField("name", formData.name),
+      capacity: validateField("capacity", formData.capacity),
+      location: validateField("location", formData.location),
+      availabilityStart: validateField("availabilityStart", formData.availabilityStart),
+      availabilityEnd: validateField("availabilityEnd", formData.availabilityEnd),
+    };
+
+    setErrors(newErrors);
+    return !Object.values(newErrors).some((msg) => msg);
+  };
+
   const handleChange = (e) => {
     const { name, value } = e.target;
 
-    setFormData((prev) => ({
-      ...prev,
+    const updatedForm = {
+      ...formData,
       [name]: value,
       ...(name === "type" && value === "EQUIPMENT" ? { capacity: 1 } : {}),
+    };
+
+    setFormData(updatedForm);
+
+    setErrors((prev) => ({
+      ...prev,
+      [name]: validateField(name, updatedForm[name], updatedForm),
+      ...(name === "type" && value === "EQUIPMENT" ? { capacity: "" } : {}),
+      ...(name === "availabilityStart"
+        ? { availabilityEnd: validateField("availabilityEnd", updatedForm.availabilityEnd, updatedForm) }
+        : {}),
+      ...(name === "availabilityEnd"
+        ? { availabilityStart: validateField("availabilityStart", updatedForm.availabilityStart, updatedForm) }
+        : {}),
     }));
   };
-
-  const buildPayload = () => ({
-    ...formData,
-    capacity: Number(formData.capacity),
-    availabilityStart: `${formData.availabilityStart}:00`,
-    availabilityEnd: `${formData.availabilityEnd}:00`,
-  });
 
   const resetForm = () => {
     setFormData(initialForm);
     setEditingId(null);
+    setErrors({});
   };
 
-const handleSubmit = async (e) => {
-  e.preventDefault();
+  const handleSubmit = async (e) => {
+    e.preventDefault();
 
-  try {
-    const payload = {
-      ...formData,
-      capacity: Number(formData.capacity),
-      availabilityStart: `${formData.availabilityStart}:00`,
-      availabilityEnd: `${formData.availabilityEnd}:00`,
-    };
-
-    if (editingId) {
-      await updateResource(editingId, payload);
-      alert("Resource updated successfully");
-    } else {
-      await addResource(payload);
-      alert("Resource added successfully");
+    if (!validateForm()) {
+      return;
     }
 
-    resetForm();
-    loadResources();
-  } catch (error) {
-    console.error("Save error:", error);
-    console.error("Status:", error.response?.status);
-    console.error("Data:", error.response?.data);
+    try {
+      const payload = {
+        ...formData,
+        capacity: Number(formData.capacity),
+        availabilityStart: `${formData.availabilityStart}:00`,
+        availabilityEnd: `${formData.availabilityEnd}:00`,
+      };
 
-    alert(
-      error.response?.data?.message ||
-      error.response?.data ||
-      "Failed to save resource"
-    );
-  }
-};
+      if (editingId) {
+        await updateResource(editingId, payload);
+        alert("Resource updated successfully");
+      } else {
+        await addResource(payload);
+        alert("Resource added successfully");
+      }
+
+      resetForm();
+      loadResources();
+    } catch (error) {
+      console.error("Save error:", error);
+      console.error("Status:", error.response?.status);
+      console.error("Data:", error.response?.data);
+
+      alert(
+        error.response?.data?.message ||
+        error.response?.data ||
+        "Failed to save resource"
+      );
+    }
+  };
 
   const handleEdit = (resource) => {
     setEditingId(resource.id);
@@ -138,7 +199,7 @@ const handleSubmit = async (e) => {
       status: resource.status || "ACTIVE",
       description: resource.description || "",
     });
-
+    setErrors({});
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
@@ -222,8 +283,8 @@ const handleSubmit = async (e) => {
               placeholder={getNamePlaceholder()}
               value={formData.name}
               onChange={handleChange}
-              required
             />
+            {errors.name && <span className="field-error">{errors.name}</span>}
           </div>
 
           <div className="form-two-col">
@@ -235,9 +296,9 @@ const handleSubmit = async (e) => {
                 placeholder="Enter capacity"
                 value={formData.capacity}
                 onChange={handleChange}
-                required
                 disabled={formData.type === "EQUIPMENT"}
               />
+              {errors.capacity && <span className="field-error">{errors.capacity}</span>}
             </div>
 
             <div className="form-group">
@@ -248,8 +309,8 @@ const handleSubmit = async (e) => {
                 placeholder="Enter location"
                 value={formData.location}
                 onChange={handleChange}
-                required
               />
+              {errors.location && <span className="field-error">{errors.location}</span>}
             </div>
           </div>
 
@@ -261,8 +322,10 @@ const handleSubmit = async (e) => {
                 name="availabilityStart"
                 value={formData.availabilityStart}
                 onChange={handleChange}
-                required
               />
+              {errors.availabilityStart && (
+                <span className="field-error">{errors.availabilityStart}</span>
+              )}
             </div>
 
             <div className="form-group">
@@ -272,8 +335,10 @@ const handleSubmit = async (e) => {
                 name="availabilityEnd"
                 value={formData.availabilityEnd}
                 onChange={handleChange}
-                required
               />
+              {errors.availabilityEnd && (
+                <span className="field-error">{errors.availabilityEnd}</span>
+              )}
             </div>
           </div>
 
@@ -346,14 +411,23 @@ const handleSubmit = async (e) => {
           {resources.length > 0 ? (
             resources.map((resource) => (
               <div className="resource-item-card" key={resource.id}>
-                <h3>{resource.name}</h3>
+                <div className="resource-top">
+                  <h3>{resource.name}</h3>
+                  <span
+                    className={
+                      resource.status === "ACTIVE"
+                        ? "status-badge active-status"
+                        : "status-badge inactive-status"
+                    }
+                  >
+                    {resource.status}
+                  </span>
+                </div>
+
                 <p><strong>Type:</strong> {resource.type}</p>
                 <p><strong>Capacity:</strong> {resource.capacity}</p>
                 <p><strong>Location:</strong> {resource.location}</p>
-                <p>
-                  <strong>Availability:</strong> {resource.availabilityStart} - {resource.availabilityEnd}
-                </p>
-                <p><strong>Status:</strong> {resource.status}</p>
+                <p><strong>Availability:</strong> {resource.availabilityStart} - {resource.availabilityEnd}</p>
                 <p><strong>Description:</strong> {resource.description || "N/A"}</p>
 
                 <div className="resource-card-actions">

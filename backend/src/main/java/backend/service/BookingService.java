@@ -133,10 +133,11 @@ public class BookingService {
     }
 
     public BookingResponse cancelBooking(Long id, String userEmail) {
-        Booking booking = getBookingEntity(id);
+        Booking booking = bookingRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Booking not found"));
 
         if (!booking.getUserEmail().equalsIgnoreCase(userEmail)) {
-            throw new BadRequestException("You can only cancel your own booking");
+            throw new BadRequestException("You can cancel only your own bookings");
         }
 
         if (booking.getStatus() != BookingStatus.APPROVED) {
@@ -146,7 +147,8 @@ public class BookingService {
         booking.setStatus(BookingStatus.CANCELLED);
         booking.setAdminReason("Cancelled by user");
 
-        return mapToResponse(bookingRepository.save(booking));
+        Booking updated = bookingRepository.save(booking);
+        return mapToResponse(updated);
     }
 
     public void deleteBooking(Long id) {

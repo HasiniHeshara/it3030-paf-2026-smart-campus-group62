@@ -19,6 +19,7 @@ import ManageBookings from "./Pages/Admin/ManageBookings.jsx";
 import BookingPage from "./Pages/Home/Bookings/BookingPage";
 import OAuth2RedirectHandler from "./Pages/Auth/OAuth2RedirectHandler";
 import NotificationsPage from "./Pages/Notifications/NotificationsPage";
+import IncidentTicketsPage from "./Pages/Maintenance/IncidentTicketsPage";
 
 import "./App.css";
 
@@ -33,8 +34,16 @@ function App() {
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/oauth2/redirect" element={<OAuth2RedirectHandler />} />
 
-          <Route path="/admin/add-resource" element={<AddResource />} />
           <Route path="/facilities" element={<Facilities />} />
+
+          <Route
+            path="/admin/add-resource"
+            element={
+              <AdminRoute>
+                <AddResource />
+              </AdminRoute>
+            }
+          />
 
           <Route
             path="/dashboard"
@@ -80,6 +89,16 @@ function App() {
               </AdminRoute>
             }
           />
+
+         <Route
+          path="/maintenance"
+           element={
+             <ProtectedRoute>
+              <IncidentTicketsPage />
+            </ProtectedRoute>
+           }
+         />
+
 
           <Route
             path="/admin/manage-bookings"
