@@ -154,3 +154,142 @@
   transform: translateY(-1px);
   opacity: 0.95;
 }
+.notification-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  margin-right: 10px;
+}
+
+.bell-button {
+  position: relative;
+  border: none;
+  background: #eef3ff;
+  color: #294a8d;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.bell-button:hover {
+  background: #dfe8ff;
+}
+
+.notification-badge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  background: #e53935;
+  color: #ffffff;
+  min-width: 20px;
+  height: 20px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 6px;
+}
+
+.notification-dropdown {
+  position: absolute;
+  top: 54px;
+  right: 0;
+  width: 360px;
+  background: #ffffff;
+  border: 1px solid #dbe4f3;
+  border-radius: 16px;
+  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.12);
+  padding: 12px;
+  z-index: 999;
+}
+
+.notification-dropdown-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.notification-dropdown-header h4 {
+  margin: 0;
+  color: #1d356b;
+  font-size: 18px;
+}
+
+.view-all-btn {
+  border: none;
+  background: transparent;
+  color: #3c63d2;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.notification-empty {
+  margin: 8px 0;
+  color: #6b7a99;
+  font-size: 14px;
+}
+
+.notification-list {
+  max-height: 320px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.notification-item {
+  padding: 12px;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: 0.2s ease;
+  border: 1px solid #e5ebf7;
+}
+
+.notification-item:hover {
+  background: #f7faff;
+}
+
+.notification-item.unread {
+  background: #eef4ff;
+}
+
+.notification-item.read {
+  background: #ffffff;
+}
+
+.notification-item-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+
+.notification-title {
+  font-weight: 700;
+  color: #1d356b;
+  font-size: 14px;
+}
+
+.dot-indicator {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #3c63d2;
+  flex-shrink: 0;
+}
+
+.notification-message {
+  margin: 6px 0 0;
+  color: #4f5f7f;
+  font-size: 13px;
+  line-height: 1.4;
+}

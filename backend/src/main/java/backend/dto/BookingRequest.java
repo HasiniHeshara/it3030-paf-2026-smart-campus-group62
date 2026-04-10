@@ -1,6 +1,5 @@
 package backend.dto;
 
-import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.FutureOrPresent;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
@@ -14,8 +13,7 @@ public class BookingRequest {
     @NotNull(message = "Resource id is required")
     private Long resourceId;
 
-    @NotBlank(message = "User email is required")
-    @Email(message = "Enter a valid email")
+    // taken from Authentication on backend
     private String userEmail;
 
     @NotNull(message = "Booking date is required")

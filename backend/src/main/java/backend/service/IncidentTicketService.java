@@ -10,6 +10,7 @@ import backend.dto.IncidentTicketStatusUpdateRequest;
 import backend.entity.IncidentTicketAttachment;
 import backend.entity.IncidentTicketComment;
 import backend.entity.IncidentTicket;
+import backend.entity.Notification;
 import backend.entity.Resource;
 import backend.entity.User;
 import backend.enumtype.IncidentTicketStatus;
@@ -39,17 +40,20 @@ public class IncidentTicketService {
     private final IncidentTicketCommentRepository incidentTicketCommentRepository;
     private final ResourceRepository resourceRepository;
     private final UserRepository userRepository;
+    private final NotificationService notificationService;
 
     public IncidentTicketService(IncidentTicketRepository incidentTicketRepository,
                                  IncidentTicketAttachmentRepository incidentTicketAttachmentRepository,
                                  IncidentTicketCommentRepository incidentTicketCommentRepository,
                                  ResourceRepository resourceRepository,
-                                 UserRepository userRepository) {
+                                 UserRepository userRepository,
+                                 NotificationService notificationService) {
         this.incidentTicketRepository = incidentTicketRepository;
         this.incidentTicketAttachmentRepository = incidentTicketAttachmentRepository;
         this.incidentTicketCommentRepository = incidentTicketCommentRepository;
         this.resourceRepository = resourceRepository;
         this.userRepository = userRepository;
+        this.notificationService = notificationService;
     }
 
     @Transactional
@@ -143,7 +147,9 @@ public class IncidentTicketService {
             }
         }
 
-        return mapToResponse(incidentTicketRepository.save(incidentTicket));
+        IncidentTicket savedTicket = incidentTicketRepository.save(incidentTicket);
+        notifyTicketStatusChange(savedTicket);
+        return mapToResponse(savedTicket);
     }
 
     @Transactional
@@ -166,13 +172,22 @@ public class IncidentTicketService {
 
         incidentTicket.setAssignedTo(assignee);
 
-        return mapToResponse(incidentTicketRepository.save(incidentTicket));
+        IncidentTicket savedTicket = incidentTicketRepository.save(incidentTicket);
+
+        notificationService.createSystemNotification(
+                assignee.getEmail(),
+                "Ticket Assigned",
+                "You have been assigned to incident ticket #" + savedTicket.getId() + " for resource " + savedTicket.getResource().getName() + ".",
+                Notification.Type.TICKET
+        );
+
+        return mapToResponse(savedTicket);
     }
 
     @Transactional
     public IncidentTicketResponse updateAssignedTicketStatus(Long incidentTicketId,
-                                                            IncidentTicketStatusUpdateRequest request,
-                                                            String userEmail) {
+                                                             IncidentTicketStatusUpdateRequest request,
+                                                             String userEmail) {
         IncidentTicket incidentTicket = incidentTicketRepository.findById(incidentTicketId)
                 .orElseThrow(() -> new ResourceNotFoundException("Incident ticket not found with id: " + incidentTicketId));
 
@@ -192,7 +207,9 @@ public class IncidentTicketService {
             incidentTicket.setResolutionNotes(request.getResolutionNotes());
         }
 
-        return mapToResponse(incidentTicketRepository.save(incidentTicket));
+        IncidentTicket savedTicket = incidentTicketRepository.save(incidentTicket);
+        notifyTicketStatusChange(savedTicket);
+        return mapToResponse(savedTicket);
     }
 
     @Transactional
@@ -254,6 +271,8 @@ public class IncidentTicketService {
         comment.setContent(request.getContent());
 
         incidentTicketCommentRepository.save(comment);
+        notifyCommentAdded(incidentTicket, author, request.getContent());
+
         return mapToResponse(incidentTicket);
     }
 
@@ -307,6 +326,67 @@ public class IncidentTicketService {
         }
 
         incidentTicketCommentRepository.delete(comment);
+    }
+
+    private void notifyTicketStatusChange(IncidentTicket ticket) {
+        String reporterEmail = ticket.getReportedBy().getEmail();
+        String resourceName = ticket.getResource().getName();
+        String message;
+
+        switch (ticket.getStatus()) {
+            case IN_PROGRESS ->
+                    message = "Your incident ticket #" + ticket.getId() + " for " + resourceName + " is now IN_PROGRESS.";
+            case RESOLVED ->
+                    message = "Your incident ticket #" + ticket.getId() + " for " + resourceName + " has been RESOLVED.";
+            case CLOSED ->
+                    message = "Your incident ticket #" + ticket.getId() + " for " + resourceName + " has been CLOSED.";
+            case REJECTED -> {
+                String reason = ticket.getRejectionReason() != null && !ticket.getRejectionReason().isBlank()
+                        ? " Reason: " + ticket.getRejectionReason()
+                        : "";
+                message = "Your incident ticket #" + ticket.getId() + " for " + resourceName + " was REJECTED." + reason;
+            }
+            default -> {
+                return;
+            }
+        }
+
+        notificationService.createSystemNotification(
+                reporterEmail,
+                "Ticket Status Updated",
+                message,
+                Notification.Type.TICKET
+        );
+    }
+
+    private void notifyCommentAdded(IncidentTicket ticket, User author, String commentContent) {
+        String trimmedContent = commentContent == null ? "" : commentContent.trim();
+        String preview = trimmedContent.length() > 80
+                ? trimmedContent.substring(0, 80) + "..."
+                : trimmedContent;
+
+        User reporter = ticket.getReportedBy();
+        User assignee = ticket.getAssignedTo();
+
+        if (reporter != null && !reporter.getEmail().equalsIgnoreCase(author.getEmail())) {
+            notificationService.createSystemNotification(
+                    reporter.getEmail(),
+                    "New Comment on Your Ticket",
+                    author.getFullName() + " added a new comment on ticket #" + ticket.getId() + ": " + preview,
+                    Notification.Type.COMMENT
+            );
+        }
+
+        if (assignee != null
+                && !assignee.getEmail().equalsIgnoreCase(author.getEmail())
+                && (reporter == null || !assignee.getEmail().equalsIgnoreCase(reporter.getEmail()))) {
+            notificationService.createSystemNotification(
+                    assignee.getEmail(),
+                    "New Comment on Assigned Ticket",
+                    author.getFullName() + " added a new comment on ticket #" + ticket.getId() + ": " + preview,
+                    Notification.Type.COMMENT
+            );
+        }
     }
 
     private IncidentTicketResponse mapToResponse(IncidentTicket incidentTicket) {

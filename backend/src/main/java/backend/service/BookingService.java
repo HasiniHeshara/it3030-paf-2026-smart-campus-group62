@@ -4,6 +4,7 @@ import backend.dto.BookingRequest;
 import backend.dto.BookingResponse;
 import backend.dto.BookingStatusUpdateRequest;
 import backend.entity.Booking;
+import backend.entity.Notification;
 import backend.entity.Resource;
 import backend.enumtype.BookingStatus;
 import backend.enumtype.ResourceStatus;
@@ -21,13 +22,17 @@ public class BookingService {
 
     private final BookingRepository bookingRepository;
     private final ResourceRepository resourceRepository;
+    private final NotificationService notificationService;
 
-    public BookingService(BookingRepository bookingRepository, ResourceRepository resourceRepository) {
+    public BookingService(BookingRepository bookingRepository,
+                          ResourceRepository resourceRepository,
+                          NotificationService notificationService) {
         this.bookingRepository = bookingRepository;
         this.resourceRepository = resourceRepository;
+        this.notificationService = notificationService;
     }
 
-    public BookingResponse createBooking(BookingRequest request) {
+    public BookingResponse createBooking(BookingRequest request, String currentUserEmail) {
         Resource resource = resourceRepository.findById(request.getResourceId())
                 .orElseThrow(() -> new ResourceNotFoundException("Resource not found with id: " + request.getResourceId()));
 
@@ -48,7 +53,7 @@ public class BookingService {
 
         Booking booking = new Booking();
         booking.setResource(resource);
-        booking.setUserEmail(request.getUserEmail());
+        booking.setUserEmail(currentUserEmail);
         booking.setBookingDate(request.getBookingDate());
         booking.setStartTime(request.getStartTime());
         booking.setEndTime(request.getEndTime());
@@ -129,7 +134,32 @@ public class BookingService {
         booking.setStatus(request.getStatus());
         booking.setAdminReason(request.getAdminReason());
 
-        return mapToResponse(bookingRepository.save(booking));
+        Booking savedBooking = bookingRepository.save(booking);
+
+        String resourceName = savedBooking.getResource().getName();
+        String bookingDate = String.valueOf(savedBooking.getBookingDate());
+
+        if (savedBooking.getStatus() == BookingStatus.APPROVED) {
+            notificationService.createSystemNotification(
+                    savedBooking.getUserEmail(),
+                    "Booking Approved",
+                    "Your booking for " + resourceName + " on " + bookingDate + " has been approved.",
+                    Notification.Type.BOOKING
+            );
+        } else if (savedBooking.getStatus() == BookingStatus.REJECTED) {
+            String reason = savedBooking.getAdminReason() != null && !savedBooking.getAdminReason().isBlank()
+                    ? " Reason: " + savedBooking.getAdminReason()
+                    : "";
+
+            notificationService.createSystemNotification(
+                    savedBooking.getUserEmail(),
+                    "Booking Rejected",
+                    "Your booking for " + resourceName + " on " + bookingDate + " was rejected." + reason,
+                    Notification.Type.BOOKING
+            );
+        }
+
+        return mapToResponse(savedBooking);
     }
 
     public BookingResponse cancelBooking(Long id, String userEmail) {
@@ -148,6 +178,14 @@ public class BookingService {
         booking.setAdminReason("Cancelled by user");
 
         Booking updated = bookingRepository.save(booking);
+
+        notificationService.createSystemNotification(
+                updated.getUserEmail(),
+                "Booking Cancelled",
+                "Your booking for " + updated.getResource().getName() + " on " + updated.getBookingDate() + " was cancelled successfully.",
+                Notification.Type.BOOKING
+        );
+
         return mapToResponse(updated);
     }
 

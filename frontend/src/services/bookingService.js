@@ -12,10 +12,8 @@ export async function createBooking(bookingData) {
   });
 }
 
-export async function getMyBookings(userEmail) {
-  const data = await apiRequest(
-    `/bookings/my?userEmail=${encodeURIComponent(userEmail)}`
-  );
+export async function getMyBookings() {
+  const data = await apiRequest("/bookings/my");
   return Array.isArray(data) ? data : [];
 }
 
@@ -38,11 +36,8 @@ export async function updateBookingStatus(id, statusData) {
   });
 }
 
-export async function cancelBooking(id, userEmail) {
-  return await apiRequest(
-    `/bookings/${id}/cancel?userEmail=${encodeURIComponent(userEmail)}`,
-    {
-      method: "PATCH",
-    }
-  );
+export async function cancelBooking(id) {
+  return await apiRequest(`/bookings/${id}/cancel`, {
+    method: "PATCH",
+  });
 }
