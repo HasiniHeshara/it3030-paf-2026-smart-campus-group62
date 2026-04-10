@@ -162,8 +162,8 @@ public class BookingService {
     }
 
     private void validateBookingRequest(BookingRequest request, Resource resource) {
-        if (resource.getStatus() != ResourceStatus.AVAILABLE) {
-            throw new BadRequestException("Only AVAILABLE resources can be booked");
+        if (resource.getStatus() != ResourceStatus.ACTIVE) {
+            throw new BadRequestException("Only ACTIVE resources can be booked");
         }
 
         if (!request.getStartTime().isBefore(request.getEndTime())) {

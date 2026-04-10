@@ -38,16 +38,6 @@ export async function updateBookingStatus(id, statusData) {
   });
 }
 
-<<<<<<< Updated upstream
-  const data = await parseResponse(response);
-
-  if (!response.ok) {
-    throw new Error(data?.message || "Failed to update booking status");
-  }
-
-  return data;
-}
-=======
 export async function cancelBooking(id, userEmail) {
   return await apiRequest(
     `/bookings/${id}/cancel?userEmail=${encodeURIComponent(userEmail)}`,
@@ -56,4 +46,3 @@ export async function cancelBooking(id, userEmail) {
     }
   );
 }
->>>>>>> Stashed changes
