@@ -1,0 +1,4 @@
+scripts/install-maven.ps1
+
+# Backend local config
+backend/src/main/resources/application.properties
