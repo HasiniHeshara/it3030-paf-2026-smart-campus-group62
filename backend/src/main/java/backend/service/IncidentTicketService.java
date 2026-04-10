@@ -32,6 +32,8 @@ import java.util.List;
 @Service
 public class IncidentTicketService {
 
+    private static final long MAX_ATTACHMENT_SIZE_BYTES = 10L * 1024L * 1024L;
+
     private final IncidentTicketRepository incidentTicketRepository;
     private final IncidentTicketAttachmentRepository incidentTicketAttachmentRepository;
     private final IncidentTicketCommentRepository incidentTicketCommentRepository;
@@ -378,6 +380,10 @@ public class IncidentTicketService {
     private void validateImageAttachment(MultipartFile file) {
         if (file == null || file.isEmpty()) {
             throw new BadRequestException("Attachment file cannot be empty");
+        }
+
+        if (file.getSize() > MAX_ATTACHMENT_SIZE_BYTES) {
+            throw new BadRequestException("Each attachment must be 10MB or smaller");
         }
 
         String contentType = file.getContentType();
