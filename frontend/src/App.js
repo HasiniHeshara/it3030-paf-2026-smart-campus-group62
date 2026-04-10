@@ -34,8 +34,16 @@ function App() {
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/oauth2/redirect" element={<OAuth2RedirectHandler />} />
 
-          <Route path="/admin/add-resource" element={<AddResource />} />
           <Route path="/facilities" element={<Facilities />} />
+
+          <Route
+            path="/admin/add-resource"
+            element={
+              <AdminRoute>
+                <AddResource />
+              </AdminRoute>
+            }
+          />
 
           <Route
             path="/dashboard"

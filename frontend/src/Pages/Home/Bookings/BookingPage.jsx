@@ -1,6 +1,8 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import "./BookingPage.css";
 import {
+  cancelBooking,
   createBooking,
   getMyBookings,
   getResources,
@@ -17,6 +19,9 @@ const initialForm = {
 };
 
 const BookingPage = () => {
+  const [searchParams] = useSearchParams();
+  const selectedFromUrl = searchParams.get("resourceId");
+
   const [resources, setResources] = useState([]);
   const [formData, setFormData] = useState(initialForm);
   const [myEmail, setMyEmail] = useState("");
@@ -24,12 +29,36 @@ const BookingPage = () => {
   const [loadingResources, setLoadingResources] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [loadingBookings, setLoadingBookings] = useState(false);
+  const [cancellingId, setCancellingId] = useState(null);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
+
+  const formRef = useRef(null);
 
   useEffect(() => {
     loadResources();
   }, []);
+
+  useEffect(() => {
+    if (selectedFromUrl && resources.length > 0) {
+      const matched = resources.find(
+        (resource) => String(resource.id) === String(selectedFromUrl)
+      );
+
+      if (matched) {
+        setFormData((prev) => ({
+          ...prev,
+          resourceId: String(matched.id),
+          expectedAttendees:
+            prev.expectedAttendees || String(matched.capacity || ""),
+        }));
+
+        setTimeout(() => {
+          formRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+        }, 150);
+      }
+    }
+  }, [selectedFromUrl, resources]);
 
   const selectedResource = useMemo(() => {
     return resources.find(
@@ -76,6 +105,19 @@ const BookingPage = () => {
     }));
   };
 
+  const handleResourceSelect = (resource) => {
+    setFormData((prev) => ({
+      ...prev,
+      resourceId: String(resource.id),
+      expectedAttendees:
+        prev.expectedAttendees || String(resource.capacity || ""),
+    }));
+
+    setTimeout(() => {
+      formRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 100);
+  };
+
   const handleBookingSubmit = async (e) => {
     e.preventDefault();
     setSubmitting(true);
@@ -115,6 +157,34 @@ const BookingPage = () => {
     loadMyBookings(myEmail.trim());
   };
 
+  const handleCancelBooking = async (bookingId) => {
+    if (!myEmail.trim()) {
+      setError("Enter your email first before cancelling a booking");
+      return;
+    }
+
+    const confirmed = window.confirm(
+      "Are you sure you want to cancel this approved booking?"
+    );
+
+    if (!confirmed) return;
+
+    try {
+      setCancellingId(bookingId);
+      setMessage("");
+      setError("");
+
+      await cancelBooking(bookingId, myEmail.trim());
+
+      setMessage("Booking cancelled successfully");
+      loadMyBookings(myEmail.trim());
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setCancellingId(null);
+    }
+  };
+
   const getStatusClass = (status) => {
     if (status === "APPROVED") return "approved";
     if (status === "REJECTED") return "rejected";
@@ -149,6 +219,7 @@ const BookingPage = () => {
             <li>Booking time must match the resource availability window.</li>
             <li>Expected attendees must not exceed capacity.</li>
             <li>Conflicting time slots will be rejected.</li>
+            <li>Only approved bookings can later be cancelled.</li>
           </ul>
         </div>
       </section>
@@ -175,12 +246,7 @@ const BookingPage = () => {
                       ? "selected"
                       : ""
                   }`}
-                  onClick={() =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      resourceId: String(resource.id),
-                    }))
-                  }
+                  onClick={() => handleResourceSelect(resource)}
                 >
                   <div className="resource-top">
                     <span className="resource-type">{resource.type}</span>
@@ -200,7 +266,7 @@ const BookingPage = () => {
           )}
         </div>
 
-        <div className="booking-panel">
+        <div className="booking-panel" ref={formRef}>
           <div className="panel-header">
             <h2>Booking Request Form</h2>
             <p>Fill in the required details and submit your request.</p>
@@ -211,11 +277,25 @@ const BookingPage = () => {
               <label>Selected Resource</label>
               <input
                 type="text"
-                value={selectedResource ? selectedResource.name : ""}
+                value={
+                  selectedResource
+                    ? `${selectedResource.name} (${selectedResource.type})`
+                    : ""
+                }
                 placeholder="Select a resource first"
                 readOnly
               />
             </div>
+
+            {selectedResource && (
+              <div className="selected-resource-note">
+                Booking for: <strong>{selectedResource.name}</strong> · Capacity{" "}
+                <strong>{selectedResource.capacity}</strong> · Available{" "}
+                <strong>
+                  {selectedResource.availabilityStart} - {selectedResource.availabilityEnd}
+                </strong>
+              </div>
+            )}
 
             <div className="form-grid">
               <div className="form-group">
@@ -325,8 +405,7 @@ const BookingPage = () => {
           <p className="muted-text">Loading your bookings...</p>
         ) : myBookings.length === 0 ? (
           <p className="muted-text">
-            No bookings found yet. Enter your email and check your booking
-            history.
+            No bookings found yet. Enter your email and check your booking history.
           </p>
         ) : (
           <div className="booking-history-grid">
@@ -334,34 +413,35 @@ const BookingPage = () => {
               <div className="history-card" key={booking.id}>
                 <div className="history-head">
                   <h3>{booking.resourceName}</h3>
-                  <span
-                    className={`status-badge ${getStatusClass(booking.status)}`}
-                  >
+                  <span className={`status-badge ${getStatusClass(booking.status)}`}>
                     {booking.status}
                   </span>
                 </div>
 
                 <div className="history-body">
-                  <p>
-                    <strong>Type:</strong> {booking.resourceType}
-                  </p>
-                  <p>
-                    <strong>Date:</strong> {booking.bookingDate}
-                  </p>
-                  <p>
-                    <strong>Time:</strong> {booking.startTime} - {booking.endTime}
-                  </p>
-                  <p>
-                    <strong>Attendees:</strong> {booking.expectedAttendees}
-                  </p>
-                  <p>
-                    <strong>Purpose:</strong> {booking.purpose}
-                  </p>
+                  <p><strong>Type:</strong> {booking.resourceType}</p>
+                  <p><strong>Date:</strong> {booking.bookingDate}</p>
+                  <p><strong>Time:</strong> {booking.startTime} - {booking.endTime}</p>
+                  <p><strong>Attendees:</strong> {booking.expectedAttendees}</p>
+                  <p><strong>Purpose:</strong> {booking.purpose}</p>
                   <p>
                     <strong>Admin Reason:</strong>{" "}
                     {booking.adminReason ? booking.adminReason : "Not available"}
                   </p>
                 </div>
+
+                {booking.status === "APPROVED" && (
+                  <div className="history-actions">
+                    <button
+                      type="button"
+                      className="cancel-booking-btn"
+                      disabled={cancellingId === booking.id}
+                      onClick={() => handleCancelBooking(booking.id)}
+                    >
+                      {cancellingId === booking.id ? "Cancelling..." : "Cancel Booking"}
+                    </button>
+                  </div>
+                )}
               </div>
             ))}
           </div>
