@@ -35,6 +35,26 @@ export function AuthProvider({ children }) {
     return data;
   };
 
+  const updateProfile = async (formData) => {
+    const data = await apiRequest("/auth/me", {
+      method: "PUT",
+      body: JSON.stringify(formData),
+    });
+
+    const existingUser = JSON.parse(localStorage.getItem("user") || "{}");
+
+    const updatedUser = {
+      ...existingUser,
+      ...data,
+      token: existingUser.token,
+    };
+
+    localStorage.setItem("user", JSON.stringify(updatedUser));
+    setUser(updatedUser);
+
+    return updatedUser;
+  };
+
   const logout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
@@ -70,7 +90,9 @@ export function AuthProvider({ children }) {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, loading, register, login, logout }}>
+    <AuthContext.Provider
+      value={{ user, loading, register, login, updateProfile, logout }}
+    >
       {children}
     </AuthContext.Provider>
   );
