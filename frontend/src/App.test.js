@@ -28,6 +28,7 @@ jest.mock("./Pages/Admin/ManageUsers", () => () => <div>Manage Users</div>);
 jest.mock("./Pages/Home/Bookings/BookingPage.jsx", () => () => (
   <div>Booking Page</div>
 ));
+jest.mock("./Pages/Maintenance/IncidentTicketsPage", () => () => <div>Incident Tickets Page</div>);
 
 import App from "./App";
 
@@ -35,5 +36,5 @@ test("renders the app shell", () => {
   render(<App />);
 
   expect(screen.getByText("NavBar")).toBeInTheDocument();
-  expect(screen.getAllByText("Home Page")).toHaveLength(2);
+  expect(screen.getAllByText("Home Page")).toHaveLength(1);
 });
