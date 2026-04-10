@@ -73,6 +73,7 @@ public class IncidentTicketService {
         return mapToResponse(incidentTicketRepository.save(incidentTicket));
     }
 
+    @Transactional(readOnly = true)
     public IncidentTicketResponse getIncidentTicketById(Long incidentTicketId, String userEmail, boolean isAdmin) {
         IncidentTicket incidentTicket = incidentTicketRepository.findById(incidentTicketId)
                 .orElseThrow(() -> new ResourceNotFoundException("Incident ticket not found with id: " + incidentTicketId));
@@ -84,6 +85,7 @@ public class IncidentTicketService {
         return mapToResponse(incidentTicket);
     }
 
+    @Transactional(readOnly = true)
     public List<IncidentTicketResponse> getMyReportedTickets(String userEmail) {
         User currentUser = userRepository.findByEmail(userEmail)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + userEmail));
@@ -94,6 +96,7 @@ public class IncidentTicketService {
                 .toList();
     }
 
+    @Transactional(readOnly = true)
     public List<IncidentTicketResponse> getAssignedTickets(String userEmail) {
         User currentUser = userRepository.findByEmail(userEmail)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + userEmail));
@@ -104,6 +107,7 @@ public class IncidentTicketService {
                 .toList();
     }
 
+    @Transactional(readOnly = true)
     public List<IncidentTicketResponse> getAllTickets(IncidentTicketStatus status, boolean isAdmin) {
         if (!isAdmin) {
             throw new AccessDeniedException("Only admin can view all incident tickets");
