@@ -35,23 +35,6 @@ export function AuthProvider({ children }) {
     return data;
   };
 
-  const updateProfile = async (formData) => {
-    const data = await apiRequest("/auth/profile", {
-      method: "PUT",
-      body: JSON.stringify(formData),
-    });
-
-    const currentUser = JSON.parse(localStorage.getItem("user") || "{}");
-    const updatedUser = {
-      ...currentUser,
-      ...data,
-    };
-
-    localStorage.setItem("user", JSON.stringify(updatedUser));
-    setUser(updatedUser);
-    return updatedUser;
-  };
-
   const logout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
@@ -84,13 +67,10 @@ export function AuthProvider({ children }) {
 
   useEffect(() => {
     getCurrentUser();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
-    <AuthContext.Provider
-      value={{ user, loading, register, login, updateProfile, logout }}
-    >
+    <AuthContext.Provider value={{ user, loading, register, login, logout }}>
       {children}
     </AuthContext.Provider>
   );
