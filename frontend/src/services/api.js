@@ -1,4 +1,4 @@
-const API_BASE_URL = "http://localhost:8081/api";
+const API_BASE_URL = "http://localhost:8082/api";
 
 export async function apiRequest(endpoint, options = {}) {
   const token = localStorage.getItem("token");
@@ -9,17 +9,25 @@ export async function apiRequest(endpoint, options = {}) {
   };
 
   const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+    ...options,
     headers: {
       ...defaultHeaders,
       ...(options.headers || {}),
     },
-    ...options,
   });
 
-  const data = await response.json().catch(() => ({}));
+  const contentType = response.headers.get("content-type") || "";
+  let data = {};
+
+  if (contentType.includes("application/json")) {
+    data = await response.json().catch(() => ({}));
+  } else {
+    const text = await response.text().catch(() => "");
+    data = text ? { message: text } : {};
+  }
 
   if (!response.ok) {
-    throw new Error(data.message || "Something went wrong");
+    throw new Error(data.message || `Request failed with status ${response.status}`);
   }
 
   return data;

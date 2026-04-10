@@ -36,19 +36,22 @@ export function AuthProvider({ children }) {
   };
 
   const updateProfile = async (formData) => {
-    const data = await apiRequest("/auth/profile", {
+    const data = await apiRequest("/auth/me", {
       method: "PUT",
       body: JSON.stringify(formData),
     });
 
-    const currentUser = JSON.parse(localStorage.getItem("user") || "{}");
+    const existingUser = JSON.parse(localStorage.getItem("user") || "{}");
+
     const updatedUser = {
-      ...currentUser,
+      ...existingUser,
       ...data,
+      token: existingUser.token,
     };
 
     localStorage.setItem("user", JSON.stringify(updatedUser));
     setUser(updatedUser);
+
     return updatedUser;
   };
 
@@ -84,7 +87,6 @@ export function AuthProvider({ children }) {
 
   useEffect(() => {
     getCurrentUser();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (

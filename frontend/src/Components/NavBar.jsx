@@ -13,6 +13,9 @@ const Navbar = () => {
     navigate("/login");
   };
 
+  const dashboardPath =
+    user?.role === "ADMIN" ? "/admin-dashboard" : "/dashboard";
+
   return (
     <header className="navbar">
       <div className="navbar-container">
@@ -45,7 +48,7 @@ const Navbar = () => {
         <div className="nav-actions">
           {user ? (
             <>
-              <Link to="/dashboard" className="nav-login-btn">
+              <Link to={dashboardPath} className="nav-login-btn">
                 Dashboard
               </Link>
               <button className="nav-login-btn" onClick={handleLogout}>
@@ -53,9 +56,14 @@ const Navbar = () => {
               </button>
             </>
           ) : (
-            <Link to="/login" className="nav-login-btn">
-              Login
-            </Link>
+            <>
+              <Link to="/login" className="nav-login-btn">
+                Login
+              </Link>
+              <Link to="/register" className="nav-register-btn">
+                Register
+              </Link>
+            </>
           )}
         </div>
       </div>
