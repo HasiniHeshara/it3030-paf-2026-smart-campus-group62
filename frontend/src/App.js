@@ -21,6 +21,11 @@ import BookingPage from "./Pages/Home/Bookings/BookingPage.jsx";
 import "./App.css";
 import AddResource from "./Pages/Admin/AddResource";
 import FacilitiesPage from "./Pages/Facilities/FacilitiesPage";
+import Home from "./Pages/Home/Home";
+import BookingPage from "./Pages/Home/Bookings/BookingPage.jsx";
+import "./App.css";
+import OAuth2RedirectHandler from "./Pages/Auth/OAuth2RedirectHandler";
+
 
 function App() {
   return (
