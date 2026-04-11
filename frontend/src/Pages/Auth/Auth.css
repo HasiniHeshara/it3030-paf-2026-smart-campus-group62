@@ -77,3 +77,57 @@
 .google-btn {
   margin-top: 10px;
 }
+.google-login-modern-btn {
+  width: 100%;
+  margin-top: 14px;
+  border: 1.5px solid #d7dde8;
+  background: #ffffff;
+  color: #334155;
+  border-radius: 999px;
+  padding: 16px 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  cursor: pointer;
+  font-size: 17px;
+  font-weight: 700;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.04);
+}
+.auth-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.field-error {
+  color: #d32f2f !important;
+  font-size: 13px;
+  margin: 0;
+  padding-left: 4px;
+  font-weight: 600;
+}
+
+.input-error {
+  border: 1px solid #d52f2f !important;
+  box-shadow: 0 0 0 2px rgba(214, 23, 23, 0.08);
+}
+.auth-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.field-error {
+  color: #d32f2f !important;
+  font-size: 13px;
+  margin: 0;
+  padding-left: 4px;
+  font-weight: 600;
+}
+
+.input-error {
+  border: 1px solid #d32f2f !important;
+  box-shadow: 0 0 0 2px rgba(211, 47, 47, 0.08);
+}
