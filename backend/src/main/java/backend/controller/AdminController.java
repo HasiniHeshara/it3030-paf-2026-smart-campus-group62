@@ -1,7 +1,9 @@
 package backend.controller;
 
+import backend.dto.CreateTechnicianRequest;
 import backend.dto.UserManagementResponse;
 import backend.service.AdminService;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -22,6 +24,11 @@ public class AdminController {
     @GetMapping("/users")
     public ResponseEntity<List<UserManagementResponse>> getAllUsers() {
         return ResponseEntity.ok(adminService.getAllUsers());
+    }
+
+    @PostMapping("/users/technicians")
+    public ResponseEntity<UserManagementResponse> createTechnician(@Valid @RequestBody CreateTechnicianRequest request) {
+        return ResponseEntity.ok(adminService.createTechnician(request));
     }
 
     @DeleteMapping("/users/{id}")

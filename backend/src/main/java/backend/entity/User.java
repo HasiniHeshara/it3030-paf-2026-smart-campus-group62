@@ -29,6 +29,12 @@ public class User {
     @Column(unique = true)
     private String itNumber;
 
+    private String phoneNumber;
+
+    private String specialization;
+
+    private String experienceLevel;
+
     @Column(unique = true, nullable = false)
     private String email;
 
@@ -89,6 +95,18 @@ public class User {
         return email;
     }
 
+    public String getPhoneNumber() {
+        return phoneNumber;
+    }
+
+    public String getSpecialization() {
+        return specialization;
+    }
+
+    public String getExperienceLevel() {
+        return experienceLevel;
+    }
+
     public String getPassword() {
         return password;
     }
@@ -135,6 +153,18 @@ public class User {
 
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    public void setPhoneNumber(String phoneNumber) {
+        this.phoneNumber = phoneNumber;
+    }
+
+    public void setSpecialization(String specialization) {
+        this.specialization = specialization;
+    }
+
+    public void setExperienceLevel(String experienceLevel) {
+        this.experienceLevel = experienceLevel;
     }
 
     public void setPassword(String password) {

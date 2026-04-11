@@ -61,6 +61,115 @@
   overflow-x: auto;
 }
 
+.manage-users-section-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+.manage-users-section-head h2 {
+  margin: 0;
+  font-size: 22px;
+  color: #0f172a;
+}
+
+.manage-users-section-head span {
+  min-width: 34px;
+  height: 34px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #dbeafe;
+  color: #1d4ed8;
+  font-weight: 700;
+}
+
+.manage-users-create-card {
+  background: #fff;
+  border: 1px solid #d8e4f4;
+  border-radius: 22px;
+  padding: 24px;
+  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.05);
+  margin-bottom: 24px;
+}
+
+.manage-users-create-header h2 {
+  margin: 0 0 8px;
+  color: #0f172a;
+}
+
+.manage-users-create-header p {
+  margin: 0;
+  color: #64748b;
+}
+
+.manage-users-feedback {
+  margin-top: 16px;
+  border-radius: 12px;
+  padding: 12px 14px;
+  font-weight: 600;
+}
+
+.manage-users-feedback.success {
+  background: #e8fbef;
+  color: #166534;
+  border: 1px solid #bbf7d0;
+}
+
+.manage-users-feedback.error {
+  background: #fff1f2;
+  color: #9f1239;
+  border: 1px solid #fecdd3;
+}
+
+.tech-form {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 14px;
+  margin-top: 18px;
+}
+
+.tech-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  color: #334155;
+  font-weight: 600;
+}
+
+.tech-form input {
+  padding: 13px 14px;
+  border: 1px solid #cfd8e3;
+  border-radius: 12px;
+  font-size: 14px;
+  outline: none;
+  background: white;
+}
+
+.tech-form input:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.12);
+}
+
+.create-tech-btn {
+  grid-column: 1 / -1;
+  justify-self: start;
+  border: none;
+  border-radius: 12px;
+  padding: 13px 18px;
+  background: linear-gradient(135deg, #2563eb, #0f9a8a);
+  color: white;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.create-tech-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
 .manage-users-table {
   width: 100%;
   border-collapse: collapse;
@@ -112,5 +221,9 @@
 
   .manage-users-search {
     width: 100%;
+  }
+
+  .tech-form {
+    grid-template-columns: 1fr;
   }
 }

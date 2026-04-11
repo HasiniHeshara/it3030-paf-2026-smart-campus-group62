@@ -1,0 +1,120 @@
+.add-tech-page {
+  min-height: calc(100vh - 90px);
+  background: #eef5ff;
+  padding: 40px 20px;
+}
+
+.add-tech-wrapper {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.add-tech-hero {
+  background: linear-gradient(135deg, #ffffff, #dfeaff);
+  border: 1px solid #d8e4f4;
+  border-radius: 24px;
+  padding: 28px;
+  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.06);
+  margin-bottom: 24px;
+}
+
+.add-tech-tag {
+  display: inline-block;
+  background: #dbeafe;
+  color: #2563eb;
+  padding: 8px 14px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 700;
+  margin-bottom: 12px;
+}
+
+.add-tech-hero h1 {
+  margin: 0 0 8px;
+  color: #0f172a;
+}
+
+.add-tech-hero p {
+  margin: 0;
+  color: #64748b;
+}
+
+.add-tech-feedback {
+  margin-bottom: 16px;
+  border-radius: 12px;
+  padding: 12px 14px;
+  font-weight: 600;
+}
+
+.add-tech-feedback.success {
+  background: #e8fbef;
+  color: #166534;
+  border: 1px solid #bbf7d0;
+}
+
+.add-tech-feedback.error {
+  background: #fff1f2;
+  color: #9f1239;
+  border: 1px solid #fecdd3;
+}
+
+.add-tech-card {
+  background: white;
+  border: 1px solid #d8e4f4;
+  border-radius: 22px;
+  padding: 24px;
+  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.05);
+}
+
+.add-tech-form {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 14px;
+}
+
+.add-tech-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  color: #334155;
+  font-weight: 600;
+}
+
+.add-tech-form input,
+.add-tech-form select {
+  padding: 13px 14px;
+  border: 1px solid #cfd8e3;
+  border-radius: 12px;
+  font-size: 14px;
+  background: white;
+  outline: none;
+}
+
+.add-tech-form input:focus,
+.add-tech-form select:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.12);
+}
+
+.add-tech-btn {
+  grid-column: 1 / -1;
+  justify-self: start;
+  border: none;
+  border-radius: 12px;
+  padding: 13px 18px;
+  background: linear-gradient(135deg, #2563eb, #0f9a8a);
+  color: white;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.add-tech-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+@media (max-width: 900px) {
+  .add-tech-form {
+    grid-template-columns: 1fr;
+  }
+}

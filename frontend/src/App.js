@@ -7,6 +7,7 @@ import ProtectedRoute from "./Components/ProtectedRoute";
 import AdminRoute from "./Components/AdminRoute";
 
 import AddResource from "./Pages/Admin/AddResource.jsx";
+import AddTechnician from "./Pages/Admin/AddTechnician.jsx";
 import Facilities from "./Pages/Facilities/FacilitiesPage.jsx";
 
 import Home from "./Pages/Home/Home";
@@ -41,6 +42,15 @@ function App() {
             element={
               <AdminRoute>
                 <AddResource />
+              </AdminRoute>
+            }
+          />
+
+          <Route
+            path="/admin/add-technician"
+            element={
+              <AdminRoute>
+                <AddTechnician />
               </AdminRoute>
             }
           />

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
+import { getAssignedIncidentTickets, getMyIncidentTickets } from "../../services/incidentTicketService";
 import "./UserDashboard.css";
 
 const UserDashboard = () => {
@@ -15,6 +16,8 @@ const UserDashboard = () => {
     year: "",
     email: "",
   });
+  const [ticketSummary, setTicketSummary] = useState({ count: 0, label: "" });
+  const [summaryLoading, setSummaryLoading] = useState(true);
 
   useEffect(() => {
     if (user) {
@@ -26,6 +29,34 @@ const UserDashboard = () => {
         email: user.email || "",
       });
     }
+  }, [user]);
+
+  useEffect(() => {
+    const loadTicketSummary = async () => {
+      if (!user) {
+        setSummaryLoading(false);
+        return;
+      }
+
+      setSummaryLoading(true);
+
+      try {
+        const tickets = user.role === "TECHNICIAN"
+          ? await getAssignedIncidentTickets()
+          : await getMyIncidentTickets();
+
+        setTicketSummary({
+          count: Array.isArray(tickets) ? tickets.length : 0,
+          label: user.role === "TECHNICIAN" ? "assigned incidents" : "maintenance requests",
+        });
+      } catch (error) {
+        setTicketSummary({ count: 0, label: user.role === "TECHNICIAN" ? "assigned incidents" : "maintenance requests" });
+      } finally {
+        setSummaryLoading(false);
+      }
+    };
+
+    loadTicketSummary();
   }, [user]);
 
   const handleLogout = () => {
@@ -57,10 +88,12 @@ const UserDashboard = () => {
       <div className="userdash-wrapper">
         <div className="userdash-hero">
           <div>
-            <p className="userdash-tag">Student Dashboard</p>
+            <p className="userdash-tag">{user?.role === "TECHNICIAN" ? "Technician Dashboard" : "Student Dashboard"}</p>
             <h1>Welcome back, {user?.fullName}</h1>
             <p className="userdash-subtitle">
-              Manage your profile, bookings, maintenance requests, and notifications from one place.
+              {user?.role === "TECHNICIAN"
+                ? "Manage your profile and work on assigned maintenance incidents from one place."
+                : "Manage your profile, bookings, maintenance requests, and notifications from one place."}
             </p>
           </div>
 
@@ -112,6 +145,15 @@ const UserDashboard = () => {
             </div>
           </div>
 
+          <div className="userdash-card stats-card">
+            <h3>{user?.role === "TECHNICIAN" ? "Assigned Incidents" : "My Maintenance Requests"}</h3>
+            <div className="stats-count">{summaryLoading ? "..." : ticketSummary.count}</div>
+            <p>{ticketSummary.label || (user?.role === "TECHNICIAN" ? "assigned incidents" : "maintenance requests")}</p>
+            <button onClick={() => navigate("/maintenance")} className="stats-btn">
+              {user?.role === "TECHNICIAN" ? "Open Assigned Work" : "View Requests"}
+            </button>
+          </div>
+
           <div className="userdash-card actions-card">
             <h3>Quick Actions</h3>
             <div className="quick-actions">
@@ -119,7 +161,7 @@ const UserDashboard = () => {
                 View Bookings
               </button>
               <button onClick={() => navigate("/maintenance")} className="quick-btn">
-                Maintenance Requests
+                {user?.role === "TECHNICIAN" ? "Assigned Tickets" : "Maintenance Requests"}
               </button>
               <button onClick={() => navigate("/notifications")} className="quick-btn">
                 View Notifications

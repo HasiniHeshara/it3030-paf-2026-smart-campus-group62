@@ -71,6 +71,10 @@
   margin-bottom: 18px;
 }
 
+.incident-layout.admin-only-layout {
+  grid-template-columns: 1fr;
+}
+
 .incident-panel {
   background: var(--panel);
   border: 1px solid var(--line);

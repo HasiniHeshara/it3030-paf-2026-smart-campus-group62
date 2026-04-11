@@ -47,7 +47,7 @@ const IncidentTicketsPage = () => {
   const [editingCommentId, setEditingCommentId] = useState(null);
   const [editingCommentText, setEditingCommentText] = useState("");
 
-  const [uploadFiles, setUploadFiles] = useState([]);
+  const [createAttachments, setCreateAttachments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [detailLoading, setDetailLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -58,9 +58,14 @@ const IncidentTicketsPage = () => {
   const isTechnician = user?.role === "TECHNICIAN";
 
   const filteredAssignableUsers = useMemo(
-    () => adminUsers.filter((candidate) => ["ADMIN", "TECHNICIAN"].includes(candidate.role)),
+    () => adminUsers.filter((candidate) => candidate.role === "TECHNICIAN"),
     [adminUsers]
   );
+
+  const formatSpecialization = (value) => {
+    if (!value) return "General";
+    return value.charAt(0) + value.slice(1).toLowerCase();
+  };
 
   const availableStatusOptions = useMemo(() => {
     if (!selectedTicket) return [];
@@ -85,11 +90,6 @@ const IncidentTicketsPage = () => {
     if (isAdmin) return true;
     return selectedTicket.assignedToUserId === user.id;
   }, [isAdmin, selectedTicket, user]);
-
-  const maxAttachmentsLeft = useMemo(() => {
-    const currentCount = selectedTicket?.attachments?.length || 0;
-    return Math.max(0, 3 - currentCount);
-  }, [selectedTicket]);
 
   useEffect(() => {
     if (!user) return;
@@ -183,6 +183,12 @@ const IncidentTicketsPage = () => {
 
   const handleCreateTicket = async (event) => {
     event.preventDefault();
+
+    if (createAttachments.length > 3) {
+      setError("You can upload a maximum of 3 images when creating a ticket");
+      return;
+    }
+
     setSubmitting(true);
     setMessage("");
     setError("");
@@ -194,8 +200,14 @@ const IncidentTicketsPage = () => {
       };
 
       const created = await createIncidentTicket(payload);
+
+      if (createAttachments.length && created?.id) {
+        await uploadIncidentAttachments(created.id, createAttachments);
+      }
+
       setMessage("Incident ticket created successfully.");
       setTicketForm(createInitialTicketForm);
+      setCreateAttachments([]);
       await refreshTickets(created?.id);
     } catch (err) {
       setError(err.message || "Failed to create incident ticket");
@@ -204,40 +216,9 @@ const IncidentTicketsPage = () => {
     }
   };
 
-  const handleAttachmentUpload = async (event) => {
-    event.preventDefault();
-
-    if (!selectedTicket) return;
-
-    if (!uploadFiles.length) {
-      setError("Select at least one image to upload");
-      return;
-    }
-
-    if (uploadFiles.length > maxAttachmentsLeft) {
-      setError(`You can upload only ${maxAttachmentsLeft} more image(s) for this ticket`);
-      return;
-    }
-
-    setSubmitting(true);
-    setMessage("");
-    setError("");
-
-    try {
-      await uploadIncidentAttachments(selectedTicket.id, uploadFiles);
-      setUploadFiles([]);
-      setMessage("Attachments uploaded successfully.");
-      await refreshTickets(selectedTicket.id);
-    } catch (err) {
-      setError(err.message || "Failed to upload attachments");
-    } finally {
-      setSubmitting(false);
-    }
-  };
-
   const handleAssign = async () => {
     if (!selectedTicket || !assigneeUserId) {
-      setError("Select a technician or admin to assign this ticket");
+      setError("Select a technician to assign this ticket");
       return;
     }
 
@@ -386,77 +367,94 @@ const IncidentTicketsPage = () => {
         </div>
       </section>
 
-      <section className="incident-layout">
-        <article className="incident-panel">
-          <h2>Create Ticket</h2>
-          <form className="incident-form" onSubmit={handleCreateTicket}>
-            <label>
-              Resource
-              <select name="resourceId" value={ticketForm.resourceId} onChange={handleFormChange} required>
-                <option value="">Select resource</option>
-                {resources.map((resource) => (
-                  <option key={resource.id} value={resource.id}>
-                    {resource.name} - {resource.location}
-                  </option>
-                ))}
-              </select>
-            </label>
+      <section className={`incident-layout ${isAdmin ? "admin-only-layout" : ""}`}>
+        {!isAdmin && (
+          <article className="incident-panel">
+            <h2>Create Ticket</h2>
+            <form className="incident-form" onSubmit={handleCreateTicket}>
+              <label>
+                Resource
+                <select name="resourceId" value={ticketForm.resourceId} onChange={handleFormChange} required>
+                  <option value="">Select resource</option>
+                  {resources.map((resource) => (
+                    <option key={resource.id} value={resource.id}>
+                      {resource.name} - {resource.location}
+                    </option>
+                  ))}
+                </select>
+              </label>
 
-            <label>
-              Location
-              <input name="location" value={ticketForm.location} onChange={handleFormChange} required />
-            </label>
+              <label>
+                Location
+                <input name="location" value={ticketForm.location} onChange={handleFormChange} required />
+              </label>
 
-            <label>
-              Category
-              <input name="category" value={ticketForm.category} onChange={handleFormChange} required />
-            </label>
+              <label>
+                Category
+                <input name="category" value={ticketForm.category} onChange={handleFormChange} required />
+              </label>
 
-            <label>
-              Priority
-              <select name="priority" value={ticketForm.priority} onChange={handleFormChange}>
-                {priorities.map((priority) => (
-                  <option key={priority} value={priority}>{priority}</option>
-                ))}
-              </select>
-            </label>
+              <label>
+                Priority
+                <select name="priority" value={ticketForm.priority} onChange={handleFormChange}>
+                  {priorities.map((priority) => (
+                    <option key={priority} value={priority}>{priority}</option>
+                  ))}
+                </select>
+              </label>
 
-            <label className="full-width">
-              Description
-              <textarea
-                name="description"
-                value={ticketForm.description}
-                onChange={handleFormChange}
-                rows="4"
-                required
-              />
-            </label>
+              <label className="full-width">
+                Description
+                <textarea
+                  name="description"
+                  value={ticketForm.description}
+                  onChange={handleFormChange}
+                  rows="4"
+                  required
+                />
+              </label>
 
-            <label>
-              Preferred Contact Name
-              <input name="preferredContactName" value={ticketForm.preferredContactName} onChange={handleFormChange} />
-            </label>
+              <label>
+                Preferred Contact Name
+                <input name="preferredContactName" value={ticketForm.preferredContactName} onChange={handleFormChange} />
+              </label>
 
-            <label>
-              Preferred Contact Email
-              <input
-                name="preferredContactEmail"
-                type="email"
-                value={ticketForm.preferredContactEmail}
-                onChange={handleFormChange}
-              />
-            </label>
+              <label>
+                Preferred Contact Email
+                <input
+                  name="preferredContactEmail"
+                  type="email"
+                  value={ticketForm.preferredContactEmail}
+                  onChange={handleFormChange}
+                />
+              </label>
 
-            <label>
-              Preferred Contact Phone
-              <input name="preferredContactPhone" value={ticketForm.preferredContactPhone} onChange={handleFormChange} />
-            </label>
+              <label>
+                Preferred Contact Phone
+                <input name="preferredContactPhone" value={ticketForm.preferredContactPhone} onChange={handleFormChange} />
+              </label>
 
-            <button type="submit" disabled={submitting}>
-              {submitting ? "Submitting..." : "Submit Incident Ticket"}
-            </button>
-          </form>
-        </article>
+              <label className="full-width">
+                Attachments (up to 3 images)
+                <input
+                  type="file"
+                  multiple
+                  accept="image/*"
+                  onChange={(event) => setCreateAttachments(Array.from(event.target.files || []).slice(0, 3))}
+                />
+                <small className="status-note">
+                  {createAttachments.length
+                    ? `${createAttachments.length} file(s) selected`
+                    : "No files selected"}
+                </small>
+              </label>
+
+              <button type="submit" disabled={submitting}>
+                {submitting ? "Submitting..." : "Submit Incident Ticket"}
+              </button>
+            </form>
+          </article>
+        )}
 
         <article className="incident-panel">
           <div className="panel-head-row">
@@ -526,38 +524,11 @@ const IncidentTicketsPage = () => {
                   <li>Created: {selectedTicket.createdAt}</li>
                   <li>Updated: {selectedTicket.updatedAt}</li>
                   <li>Current status: {selectedTicket.status}</li>
-                  <li>Assigned to: {selectedTicket.assignedToName || "Not assigned"}</li>
+                  <li>
+                    Assignment: {selectedTicket.assignedToName ? `Assigned to ${selectedTicket.assignedToName}` : "Not assigned"}
+                  </li>
                   <li>Reported by: {selectedTicket.reportedByName}</li>
                 </ul>
-              </div>
-
-              <div className="attachments-box">
-                <h4>Attachments ({selectedTicket.attachments?.length || 0}/3)</h4>
-                {selectedTicket.attachments?.length ? (
-                  <ul>
-                    {selectedTicket.attachments.map((attachment) => (
-                      <li key={attachment.id}>
-                        <span>{attachment.originalFileName}</span>
-                        <small>{attachment.contentType} • {attachment.fileSize} bytes</small>
-                      </li>
-                    ))}
-                  </ul>
-                ) : (
-                  <p>No attachments uploaded yet.</p>
-                )}
-
-                <form onSubmit={handleAttachmentUpload} className="attachment-form">
-                  <input
-                    type="file"
-                    multiple
-                    accept="image/*"
-                    onChange={(event) => setUploadFiles(Array.from(event.target.files || []))}
-                    disabled={maxAttachmentsLeft === 0 || submitting}
-                  />
-                  <button type="submit" disabled={!uploadFiles.length || maxAttachmentsLeft === 0 || submitting}>
-                    Upload Attachments
-                  </button>
-                </form>
               </div>
             </>
           )}
@@ -568,12 +539,12 @@ const IncidentTicketsPage = () => {
 
           {selectedTicket && isAdmin && (
             <div className="action-group">
-              <h4>Assign Technician/Staff</h4>
+              <h4>Assign Technician</h4>
               <select value={assigneeUserId} onChange={(event) => setAssigneeUserId(event.target.value)}>
                 <option value="">Select assignee</option>
                 {filteredAssignableUsers.map((candidate) => (
                   <option key={candidate.id} value={candidate.id}>
-                    {candidate.fullName} ({candidate.role})
+                    {candidate.fullName} ({formatSpecialization(candidate.specialization)})
                   </option>
                 ))}
               </select>

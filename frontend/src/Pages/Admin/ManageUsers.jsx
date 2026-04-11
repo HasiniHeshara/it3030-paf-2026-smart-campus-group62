@@ -33,6 +33,9 @@ const ManageUsers = () => {
     setFilteredUsers(filtered);
   }, [search, users]);
 
+  const technicianUsers = filteredUsers.filter((user) => user.role === "TECHNICIAN");
+  const regularUsers = filteredUsers.filter((user) => user.role !== "TECHNICIAN");
+
   const handleDelete = async (id) => {
     const confirmed = window.confirm("Are you sure you want to delete this user?");
     if (!confirmed) return;
@@ -75,6 +78,56 @@ const ManageUsers = () => {
         </div>
 
         <div className="manage-users-table-card">
+          <div className="manage-users-section-head">
+            <h2>Technician Accounts</h2>
+            <span>{technicianUsers.length}</span>
+          </div>
+
+          <table className="manage-users-table">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Speciality</th>
+                <th>Experience</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {technicianUsers.length > 0 ? (
+                technicianUsers.map((user) => (
+                  <tr key={user.id}>
+                    <td>{user.fullName}</td>
+                    <td>{user.email}</td>
+                    <td>{user.specialization || "N/A"}</td>
+                    <td>{user.year || "N/A"}</td>
+                    <td>
+                      <button
+                        className="delete-btn"
+                        onClick={() => handleDelete(user.id)}
+                      >
+                        Delete
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan="5" className="no-users">
+                    No technicians found
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+
+        <div className="manage-users-table-card">
+          <div className="manage-users-section-head">
+            <h2>Regular Users</h2>
+            <span>{regularUsers.length}</span>
+          </div>
+
           <table className="manage-users-table">
             <thead>
               <tr>
@@ -88,8 +141,8 @@ const ManageUsers = () => {
               </tr>
             </thead>
             <tbody>
-              {filteredUsers.length > 0 ? (
-                filteredUsers.map((user) => (
+              {regularUsers.length > 0 ? (
+                regularUsers.map((user) => (
                   <tr key={user.id}>
                     <td>{user.fullName}</td>
                     <td>{user.itNumber}</td>
@@ -110,7 +163,7 @@ const ManageUsers = () => {
               ) : (
                 <tr>
                   <td colSpan="7" className="no-users">
-                    No users found
+                    No regular users found
                   </td>
                 </tr>
               )}

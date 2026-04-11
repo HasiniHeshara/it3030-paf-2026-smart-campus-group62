@@ -9,12 +9,13 @@ public class UserManagementResponse {
     private String itNumber;
     private String email;
     private String role;
+    private String specialization;
 
     public UserManagementResponse() {
     }
 
     public UserManagementResponse(Long id, String fullName, String year, String faculty,
-                                  String itNumber, String email, String role) {
+                                  String itNumber, String email, String role, String specialization) {
         this.id = id;
         this.fullName = fullName;
         this.year = year;
@@ -22,6 +23,7 @@ public class UserManagementResponse {
         this.itNumber = itNumber;
         this.email = email;
         this.role = role;
+        this.specialization = specialization;
     }
 
     public Long getId() {
@@ -50,5 +52,9 @@ public class UserManagementResponse {
 
     public String getRole() {
         return role;
+    }
+
+    public String getSpecialization() {
+        return specialization;
     }
 }

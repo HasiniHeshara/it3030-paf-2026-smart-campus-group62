@@ -36,6 +36,11 @@ const AdminDashboard = () => {
             <p>View, search, and manage all registered users in the system.</p>
           </div>
 
+          <div className="admin-card" onClick={() => navigate("/admin/add-technician")}>
+            <h3>Add Technicians</h3>
+            <p>Create technician accounts that can be assigned to maintenance tickets.</p>
+          </div>
+
           <div className="admin-card" onClick={() => navigate("/admin/manage-bookings")}>
             <h3>Manage Bookings</h3>
             <p>View and manage all booking requests.</p>
