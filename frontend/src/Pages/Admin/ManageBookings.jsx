@@ -219,6 +219,25 @@ const ManageBookings = () => {
           <p>Approve or reject pending requests from here.</p>
         </div>
 
+        <div className="status-legend">
+          <div className="legend-item">
+            <span className="legend-dot pending-dot"></span>
+            <span>Pending</span>
+          </div>
+          <div className="legend-item">
+            <span className="legend-dot approved-dot"></span>
+            <span>Approved</span>
+          </div>
+          <div className="legend-item">
+            <span className="legend-dot rejected-dot"></span>
+            <span>Rejected</span>
+          </div>
+          <div className="legend-item">
+            <span className="legend-dot cancelled-dot"></span>
+            <span>Cancelled</span>
+          </div>
+        </div>
+
         {message && <div className="success-box">{message}</div>}
         {error && <div className="error-box">{error}</div>}
 
