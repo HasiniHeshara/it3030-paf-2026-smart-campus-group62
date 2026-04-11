@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
+import { FcGoogle } from "react-icons/fc";
 import "./Auth.css";
 
 const LoginPage = () => {
@@ -12,6 +13,8 @@ const LoginPage = () => {
     email: "",
     password: "",
   });
+
+  const [errors, setErrors] = useState({});
   const [error, setError] = useState("");
 
   useEffect(() => {
@@ -29,17 +32,63 @@ const LoginPage = () => {
     }
   }, [location]);
 
+  const validateField = (name, value) => {
+    switch (name) {
+      case "email":
+        if (!value.trim()) return "University email is required";
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim())) {
+          return "Enter a valid email address";
+        }
+        return "";
+
+      case "password":
+        if (!value) return "Password is required";
+        if (value.length < 6) return "Password must be at least 6 characters";
+        return "";
+
+      default:
+        return "";
+    }
+  };
+
+  const validateAll = () => {
+    const newErrors = {};
+
+    Object.keys(formData).forEach((key) => {
+      const validationError = validateField(key, formData[key]);
+      if (validationError) {
+        newErrors[key] = validationError;
+      }
+    });
+
+    return newErrors;
+  };
+
   const handleChange = (e) => {
+    const { name, value } = e.target;
+
     setError("");
     setFormData((prev) => ({
       ...prev,
-      [e.target.name]: e.target.value,
+      [name]: value,
+    }));
+
+    setErrors((prev) => ({
+      ...prev,
+      [name]: validateField(name, value),
     }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
+
+    const validationErrors = validateAll();
+    setErrors(validationErrors);
+
+    if (Object.keys(validationErrors).length > 0) {
+      return;
+    }
 
     try {
       const data = await login(formData);
@@ -66,23 +115,31 @@ const LoginPage = () => {
         <p>Sign in to your Smart Campus Hub account.</p>
 
         <form onSubmit={handleSubmit} className="auth-form">
-          <input
-            type="email"
-            name="email"
-            placeholder="University email"
-            value={formData.email}
-            onChange={handleChange}
-            required
-          />
+          <div className="auth-field">
+            <input
+              type="email"
+              name="email"
+              placeholder="University email"
+              value={formData.email}
+              onChange={handleChange}
+              className={errors.email ? "input-error" : ""}
+              required
+            />
+            {errors.email && <p className="field-error">{errors.email}</p>}
+          </div>
 
-          <input
-            type="password"
-            name="password"
-            placeholder="Password"
-            value={formData.password}
-            onChange={handleChange}
-            required
-          />
+          <div className="auth-field">
+            <input
+              type="password"
+              name="password"
+              placeholder="Password"
+              value={formData.password}
+              onChange={handleChange}
+              className={errors.password ? "input-error" : ""}
+              required
+            />
+            {errors.password && <p className="field-error">{errors.password}</p>}
+          </div>
 
           {error && <div className="auth-error">{error}</div>}
 
@@ -92,10 +149,13 @@ const LoginPage = () => {
 
           <button
             type="button"
-            className="auth-btn google-btn"
+            className="google-login-modern-btn"
             onClick={handleGoogleLogin}
           >
-            Continue with Google
+            <span className="google-icon-circle">
+              <FcGoogle size={22} />
+            </span>
+            <span>Continue with Google</span>
           </button>
         </form>
 
