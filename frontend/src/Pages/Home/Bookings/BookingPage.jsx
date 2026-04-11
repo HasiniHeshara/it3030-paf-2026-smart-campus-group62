@@ -292,7 +292,8 @@ const BookingPage = () => {
                 Booking for: <strong>{selectedResource.name}</strong> · Capacity{" "}
                 <strong>{selectedResource.capacity}</strong> · Available{" "}
                 <strong>
-                  {selectedResource.availabilityStart} - {selectedResource.availabilityEnd}
+                  {selectedResource.availabilityStart} -{" "}
+                  {selectedResource.availabilityEnd}
                 </strong>
               </div>
             )}
@@ -391,9 +392,7 @@ const BookingPage = () => {
         ) : loadingBookings ? (
           <p className="muted-text">Loading your bookings...</p>
         ) : myBookings.length === 0 ? (
-          <p className="muted-text">
-            No bookings found yet for your account.
-          </p>
+          <p className="muted-text">No bookings found yet for your account.</p>
         ) : (
           <div className="booking-history-grid">
             {myBookings.map((booking) => (
@@ -403,6 +402,52 @@ const BookingPage = () => {
                   <span className={`status-badge ${getStatusClass(booking.status)}`}>
                     {booking.status}
                   </span>
+                </div>
+
+                <div className="booking-timeline">
+                  <div className="timeline-step active">
+                    <div className="timeline-dot"></div>
+                    <span>Requested</span>
+                  </div>
+
+                  <div
+                    className={`timeline-step ${
+                      booking.status === "APPROVED" ||
+                      booking.status === "REJECTED" ||
+                      booking.status === "CANCELLED"
+                        ? "active"
+                        : ""
+                    }`}
+                  >
+                    <div className="timeline-dot"></div>
+                    <span>Reviewed</span>
+                  </div>
+
+                  <div
+                    className={`timeline-step ${
+                      booking.status === "APPROVED" || booking.status === "REJECTED"
+                        ? "active"
+                        : ""
+                    } ${booking.status === "REJECTED" ? "rejected-step" : ""}`}
+                  >
+                    <div className="timeline-dot"></div>
+                    <span>
+                      {booking.status === "REJECTED"
+                        ? "Rejected"
+                        : "Approved / Rejected"}
+                    </span>
+                  </div>
+
+                  <div
+                    className={`timeline-step ${
+                      booking.status === "CANCELLED"
+                        ? "active cancelled-step"
+                        : ""
+                    }`}
+                  >
+                    <div className="timeline-dot"></div>
+                    <span>Cancelled</span>
+                  </div>
                 </div>
 
                 <div className="history-body">
@@ -425,7 +470,9 @@ const BookingPage = () => {
                       disabled={cancellingId === booking.id}
                       onClick={() => handleCancelBooking(booking.id)}
                     >
-                      {cancellingId === booking.id ? "Cancelling..." : "Cancel Booking"}
+                      {cancellingId === booking.id
+                        ? "Cancelling..."
+                        : "Cancel Booking"}
                     </button>
                   </div>
                 )}

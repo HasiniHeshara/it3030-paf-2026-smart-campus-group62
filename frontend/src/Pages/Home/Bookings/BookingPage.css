@@ -398,3 +398,76 @@
   opacity: 0.6;
   cursor: not-allowed;
 }
+
+.booking-timeline {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  margin: 16px 0 18px;
+  padding: 14px;
+  border: 1px solid #dbe6f6;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.72);
+}
+
+.timeline-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  opacity: 0.45;
+  position: relative;
+}
+
+.timeline-step span {
+  margin-top: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #5b708d;
+  line-height: 1.4;
+}
+
+.timeline-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #cfd8e6;
+  border: 3px solid #e7edf7;
+}
+
+.timeline-step.active {
+  opacity: 1;
+}
+
+.timeline-step.active .timeline-dot {
+  background: #7e9ed8;
+}
+
+.timeline-step.rejected-step.active .timeline-dot {
+  background: #d98282;
+}
+
+.timeline-step.cancelled-step.active .timeline-dot {
+  background: #9aa5b1;
+}
+
+@media (max-width: 768px) {
+  .booking-timeline {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .booking-timeline {
+    grid-template-columns: 1fr;
+  }
+
+  .timeline-step {
+    align-items: flex-start;
+    text-align: left;
+  }
+
+  .timeline-step span {
+    margin-top: 6px;
+  }
+}
