@@ -7,6 +7,8 @@ import {
   deleteResource,
 } from "../../services/resourceService";
 import "./AddResource.css";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
 
 const AddResource = () => {
   const initialForm = {
@@ -251,6 +253,59 @@ const AddResource = () => {
     loadResources();
   };
 
+  const handleDownloadPDF = () => {
+  const doc = new jsPDF();
+
+  doc.setFontSize(18);
+  doc.text("Smart Campus Hub - Resources Report", 14, 18);
+
+  doc.setFontSize(11);
+  doc.text("Facilities & Assets Catalogue", 14, 26);
+  doc.text(`Generated on: ${new Date().toLocaleString()}`, 14, 32);
+
+  const tableColumn = [
+    "ID",
+    "Name",
+    "Type",
+    "Capacity",
+    "Location",
+    "Start",
+    "End",
+    "Status",
+  ];
+
+  const tableRows = resources.map((resource) => [
+    resource.id,
+    resource.name,
+    resource.type,
+    resource.capacity,
+    resource.location,
+    resource.availabilityStart,
+    resource.availabilityEnd,
+    resource.status,
+  ]);
+
+  autoTable(doc, {
+    head: [tableColumn],
+    body: tableRows,
+    startY: 40,
+    styles: {
+      fontSize: 9,
+      cellPadding: 3,
+    },
+    headStyles: {
+      fillColor: [72, 117, 180],
+      textColor: 255,
+    },
+    alternateRowStyles: {
+      fillColor: [245, 248, 252],
+    },
+    margin: { left: 10, right: 10 },
+  });
+
+  doc.save("resources-report.pdf");
+};
+
   return (
     <div className="resource-page">
       <div className="resource-page-header">
@@ -376,7 +431,12 @@ const AddResource = () => {
       </div>
 
       <div className="resource-list-card">
-        <h2>Added Resources</h2>
+        <div className="resource-list-header">
+          <h2>Added Resources</h2>
+          <button type="button" className="download-pdf-btn" onClick={handleDownloadPDF}>
+            Download PDF
+          </button>
+        </div>
 
         <div className="search-bar-row">
           <select value={searchBy} onChange={(e) => setSearchBy(e.target.value)}>
