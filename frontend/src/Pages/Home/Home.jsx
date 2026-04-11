@@ -128,6 +128,44 @@ const Home = () => {
           </div>
         </div>
       </section>
+
+       <section className="home-bottom-section">
+        <div className="section-heading">
+          <span className="section-tag">SYSTEM VALUE</span>
+          <h2>Why Smart Campus Hub matters</h2>
+          <p>
+            By connecting facilities, bookings, maintenance, and notifications,
+            the platform reduces manual work and improves the overall campus
+            service experience.
+          </p>
+        </div>
+        
+        <div className="value-grid">
+          <div className="value-card">
+            <h3>Improved Visibility</h3>
+            <p>
+              Resource information is organized clearly, helping users identify
+              the right space or equipment more quickly.
+            </p>
+          </div>
+
+          <div className="value-card">
+            <h3>Better Coordination</h3>
+            <p>
+              Connected modules support smoother communication between users,
+              administrators, and service teams.
+            </p>
+          </div>
+
+          <div className="value-card">
+            <h3>Operational Efficiency</h3>
+            <p>
+              A centralized web platform helps reduce repetitive manual handling
+              and supports more reliable campus workflows.
+            </p>
+          </div>
+        </div>
+      </section>
     </main>
   );
 };
