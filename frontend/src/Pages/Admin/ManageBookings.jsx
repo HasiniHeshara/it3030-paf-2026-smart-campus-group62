@@ -1,4 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
 import "./ManageBookings.css";
 import { getAllBookings, updateBookingStatus } from "../../services/bookingService";
 
@@ -20,6 +22,7 @@ const ManageBookings = () => {
 
   useEffect(() => {
     loadBookings();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const loadBookings = async (customFilters = filters) => {
@@ -92,6 +95,55 @@ const ManageBookings = () => {
     }
   };
 
+  const handleDownloadPdf = () => {
+    if (!bookings.length) {
+      setError("No booking records available to download");
+      return;
+    }
+
+    const doc = new jsPDF();
+
+    doc.setFontSize(18);
+    doc.text("Booking Management Report", 14, 18);
+
+    doc.setFontSize(11);
+    doc.text(`Total Visible Bookings: ${bookings.length}`, 14, 26);
+    doc.text(`Generated Date: ${new Date().toLocaleString()}`, 14, 32);
+
+    autoTable(doc, {
+      startY: 40,
+      head: [[
+        "ID",
+        "Resource",
+        "Type",
+        "User Email",
+        "Date",
+        "Time",
+        "Status",
+        "Reason"
+      ]],
+      body: bookings.map((booking) => [
+        booking.id,
+        booking.resourceName,
+        booking.resourceType,
+        booking.userEmail,
+        booking.bookingDate,
+        `${booking.startTime} - ${booking.endTime}`,
+        booking.status,
+        booking.adminReason || "-"
+      ]),
+      styles: {
+        fontSize: 9,
+        cellPadding: 3,
+      },
+      headStyles: {
+        fillColor: [91, 120, 184],
+      },
+    });
+
+    doc.save("booking-management-report.pdf");
+  };
+
   const getStatusClass = (status) => {
     if (status === "APPROVED") return "approved";
     if (status === "REJECTED") return "rejected";
@@ -117,9 +169,19 @@ const ManageBookings = () => {
       </section>
 
       <section className="manage-bookings-panel">
-        <div className="panel-header">
-          <h2>Filters</h2>
-          <p>Use filters to quickly find booking requests.</p>
+        <div className="panel-header panel-header-actions">
+          <div>
+            <h2>Filters</h2>
+            <p>Use filters to quickly find booking requests.</p>
+          </div>
+
+          <button
+            type="button"
+            className="download-pdf-btn"
+            onClick={handleDownloadPdf}
+          >
+            Download PDF
+          </button>
         </div>
 
         <form className="filter-form" onSubmit={handleApplyFilters}>
@@ -155,6 +217,25 @@ const ManageBookings = () => {
         <div className="panel-header">
           <h2>Booking Requests</h2>
           <p>Approve or reject pending requests from here.</p>
+        </div>
+
+        <div className="status-legend">
+          <div className="legend-item">
+            <span className="legend-dot pending-dot"></span>
+            <span>Pending</span>
+          </div>
+          <div className="legend-item">
+            <span className="legend-dot approved-dot"></span>
+            <span>Approved</span>
+          </div>
+          <div className="legend-item">
+            <span className="legend-dot rejected-dot"></span>
+            <span>Rejected</span>
+          </div>
+          <div className="legend-item">
+            <span className="legend-dot cancelled-dot"></span>
+            <span>Cancelled</span>
+          </div>
         </div>
 
         {message && <div className="success-box">{message}</div>}

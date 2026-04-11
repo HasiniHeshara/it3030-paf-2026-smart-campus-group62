@@ -46,10 +46,7 @@ const AdminDashboard = () => {
             <p>Track and update maintenance issues and request statuses.</p>
           </div>
 
-          <div className="admin-card" onClick={() => navigate("/notifications")}>
-            <h3>Notifications</h3>
-            <p>Send and review important system notifications.</p>
-          </div>
+          
 
           <div className="admin-card" onClick={() => navigate("/admin/add-resource")}>
             <h3>Add Resources</h3>

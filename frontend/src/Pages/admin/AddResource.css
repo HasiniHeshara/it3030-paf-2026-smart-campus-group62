@@ -1,15 +1,15 @@
 .resource-page {
   min-height: 100vh;
-  padding: 36px;
+  padding: 32px;
   background: linear-gradient(180deg, #eef6ff 0%, #e7f1fb 100%);
 }
 
 .resource-page-header {
-  margin-bottom: 28px;
+  margin-bottom: 24px;
 }
 
 .resource-page-header h1 {
-  font-size: 34px;
+  font-size: 32px;
   color: #2f4768;
   margin-bottom: 8px;
 }
@@ -33,18 +33,19 @@
 .resource-form-card h2,
 .resource-list-card h2 {
   color: #355377;
-  margin-bottom: 20px;
+  margin-bottom: 18px;
   font-size: 22px;
 }
 
 .resource-form {
   display: grid;
-  gap: 18px;
+  gap: 16px;
 }
 
 .form-group {
-  display: grid;
-  gap: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
 }
 
 .form-group label {
@@ -56,7 +57,7 @@
 .form-two-col {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 18px;
+  gap: 16px;
 }
 
 .resource-form input,
@@ -65,13 +66,27 @@
 .search-bar-row input,
 .search-bar-row select {
   width: 100%;
-  padding: 14px 16px;
   border-radius: 14px;
   border: 1px solid #d7e3f1;
   background: #ffffff;
   font-size: 14px;
   outline: none;
   transition: 0.2s ease;
+  box-sizing: border-box;
+}
+
+.resource-form input,
+.resource-form select,
+.search-bar-row input,
+.search-bar-row select {
+  height: 46px;
+  padding: 0 14px;
+}
+
+.resource-form textarea {
+  padding: 12px 14px;
+  min-height: 120px;
+  resize: vertical;
 }
 
 .resource-form input:focus,
@@ -83,15 +98,11 @@
   box-shadow: 0 0 0 3px rgba(184, 216, 255, 0.2);
 }
 
-.resource-form textarea {
-  resize: vertical;
-  min-height: 110px;
-}
-
 .form-actions {
   display: flex;
   gap: 12px;
   flex-wrap: wrap;
+  margin-top: 6px;
 }
 
 .primary-btn,
@@ -109,12 +120,14 @@
 .primary-btn {
   background: linear-gradient(135deg, #b8d8ff, #d8cbff);
   color: #28435e;
+  min-width: 150px;
 }
 
 .secondary-btn {
   background: #ffffff;
   border: 1px solid #d7e3f1;
   color: #5c6e85;
+  min-width: 140px;
 }
 
 .primary-btn:hover,
@@ -174,24 +187,10 @@
   color: #8a3d3d;
 }
 
-@media (max-width: 900px) {
-  .form-two-col {
-    grid-template-columns: 1fr;
-  }
-
-  .search-bar-row {
-    grid-template-columns: 1fr;
-  }
-
-  .resource-page {
-    padding: 22px;
-  }
-}
-
 .field-error {
   color: #d43f3f;
   font-size: 13px;
-  margin-top: -2px;
+  margin-top: 2px;
 }
 
 .resource-top {
@@ -217,4 +216,51 @@
 .inactive-status {
   background: #fdeaea;
   color: #b33a3a;
+}
+
+@media (max-width: 900px) {
+  .form-two-col {
+    grid-template-columns: 1fr;
+  }
+
+  .search-bar-row {
+    grid-template-columns: 1fr;
+  }
+
+  .resource-page {
+    padding: 20px;
+  }
+
+  .form-actions {
+    flex-direction: column;
+  }
+
+  .primary-btn,
+  .secondary-btn {
+    width: 100%;
+  }
+}
+
+.resource-list-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.download-pdf-btn {
+  border: none;
+  cursor: pointer;
+  font-weight: 700;
+  border-radius: 14px;
+  padding: 12px 18px;
+  background: linear-gradient(135deg, #9ec5ff, #cbb7ff);
+  color: #28435e;
+  transition: 0.2s ease;
+}
+
+.download-pdf-btn:hover {
+  transform: translateY(-2px);
 }
